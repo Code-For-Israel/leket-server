@@ -1,0 +1,119 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum FieldStatus {
+  IN_PROGRESS
+  NOT_KNOWN
+}
+
+enum Familiarity {
+  KNOWN
+  NOT_KNOWN
+}
+
+enum Region {
+  SOUTH
+  NORTH
+  CENTER
+  JERUSALEM
+}
+
+enum Product {
+  CUCAMBER
+  ONION
+  TOMATO
+}
+
+model Field {
+  id               Int              @id @default(autoincrement())
+  name             String
+  product_name     String
+  farmer_id        String
+  region           Region
+  familiarity      Familiarity
+  familiarity_desc String
+  latitude         Float
+  longitude        Float
+  polygon          Json
+  category         String
+  status           FieldStatus
+  status_date      DateTime
+  delay_date       DateTime
+  created_date     DateTime
+  Satelites        Satelite[]
+  Missions         Mission[]
+  Histories        History[]
+  Attractivenesses Attractiveness[]
+
+  @@index([farmer_id])
+  @@index([category])
+  @@index([familiarity])
+}
+
+model Satelite {
+  field      Field    @relation(fields: [field_id], references: [id])
+  field_id   Int
+  date       DateTime
+  statistics Json
+  like       Boolean
+
+  @@id([field_id, date])
+}
+
+model Attractiveness {
+  id             Int      @id
+  field          Field    @relation(fields: [field_id], references: [id])
+  field_id       Int
+  date           DateTime
+  mission_score  Float
+  market_score   Float
+  satelite_score Float
+  average_score  Float
+  like           Boolean
+
+  @@index([field_id, date])
+}
+
+model Market {
+  id           Int      @id @default(autoincrement())
+  date         DateTime
+  product_name Product
+  price        Float
+
+  @@index([product_name, date])
+}
+
+model Mission {
+  id              Int      @id @default(autoincrement())
+  date            DateTime
+  field           Field    @relation(fields: [field_id], references: [id])
+  field_id        Int
+  product_name    Product
+  amount_kg       Float
+  was_ripe        String
+  was_picked      Boolean
+  not_picked_desc String
+
+  @@index([field_id, product_name])
+  @@index([product_name])
+}
+
+model History {
+  field        Field    @relation(fields: [field_id], references: [id])
+  field_id     Int
+  date         DateTime
+  product_name Product
+  farmer_id    String
+
+  @@id([date, field_id, product_name])
+  @@index([field_id, product_name])
+}
