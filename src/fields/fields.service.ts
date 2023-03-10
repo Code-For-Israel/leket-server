@@ -7,7 +7,8 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class FieldsService {
   constructor(private prisma: PrismaService) {}
   create(createFieldDto: CreateFieldDto) {
-    return 'This action adds a new field';
+    console.log(createFieldDto);
+    return this.prisma.field.create({ data: createFieldDto });
   }
 
   findAll() {

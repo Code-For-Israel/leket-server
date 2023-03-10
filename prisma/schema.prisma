@@ -34,10 +34,10 @@ enum Product {
 }
 
 model Field {
-  id               BigInt           @id @default(autoincrement()) @db.BigInt
+  id               Int              @id @default(autoincrement())
   name             String
-  product_name     String
-  farmer_id        String
+  product_name     String?
+  farmer_id        String?
   region           Region
   familiarity      Familiarity
   familiarity_desc String
@@ -61,7 +61,7 @@ model Field {
 
 model Satelite {
   field      Field    @relation(fields: [field_id], references: [id])
-  field_id   BigInt
+  field_id   Int
   date       DateTime
   statistics Json
   like       Boolean
@@ -72,7 +72,7 @@ model Satelite {
 model Attractiveness {
   id             Int      @id
   field          Field    @relation(fields: [field_id], references: [id])
-  field_id       BigInt
+  field_id       Int
   date           DateTime
   mission_score  Float
   market_score   Float
@@ -96,7 +96,7 @@ model Mission {
   id              Int      @id @default(autoincrement())
   date            DateTime
   field           Field    @relation(fields: [field_id], references: [id])
-  field_id        BigInt
+  field_id        Int
   product_name    Product
   amount_kg       Float
   was_ripe        String
@@ -109,7 +109,7 @@ model Mission {
 
 model History {
   field        Field    @relation(fields: [field_id], references: [id])
-  field_id     BigInt
+  field_id     Int
   date         DateTime
   product_name Product
   farmer_id    String
