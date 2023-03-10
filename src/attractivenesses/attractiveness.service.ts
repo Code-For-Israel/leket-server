@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { CreateAttractivenessDto } from './dto/create-attractiveness.dto';
 import { UpdateAttractivenessDto } from './dto/update-attractiveness.dto';
+import { PrismaService } from "../prisma/prisma.service";
 
 @Injectable()
 export class AttractivenessesService {
+  constructor(private prisma: PrismaService) {}
   create(createAttractivenessDto: CreateAttractivenessDto) {
-    return 'This action adds a new attractiveness';
+    return this.prisma.attractiveness.create({ data: createAttractivenessDto });
   }
 
   findAll() {
