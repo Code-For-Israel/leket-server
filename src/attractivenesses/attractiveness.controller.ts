@@ -7,29 +7,27 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
-import { AttractivenessesService } from './attractivenesses.service';
+import { AttractivenessService } from './attractiveness.service';
 import { CreateAttractivenessDto } from './dto/create-attractiveness.dto';
 import { UpdateAttractivenessDto } from './dto/update-attractiveness.dto';
 
-@Controller('attractivenesses')
-export class AttractivenessesController {
-  constructor(
-    private readonly attractivenessesService: AttractivenessesService,
-  ) {}
+@Controller('attractiveness')
+export class AttractivenessController {
+  constructor(private readonly attractivenessService: AttractivenessService) {}
 
   @Post()
   create(@Body() createAttractivenessDto: CreateAttractivenessDto) {
-    return this.attractivenessesService.create(createAttractivenessDto);
+    return this.attractivenessService.create(createAttractivenessDto);
   }
 
   @Get()
   findAll() {
-    return this.attractivenessesService.findAll();
+    return this.attractivenessService.findAll();
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.attractivenessesService.findOne(+id);
+    return this.attractivenessService.findOne(+id);
   }
 
   @Patch(':id')
@@ -37,11 +35,11 @@ export class AttractivenessesController {
     @Param('id') id: string,
     @Body() updateAttractivenessDto: UpdateAttractivenessDto,
   ) {
-    return this.attractivenessesService.update(+id, updateAttractivenessDto);
+    return this.attractivenessService.update(+id, updateAttractivenessDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.attractivenessesService.remove(+id);
+    return this.attractivenessService.remove(+id);
   }
 }

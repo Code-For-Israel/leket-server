@@ -70,7 +70,7 @@ model Satelite {
 }
 
 model Attractiveness {
-  id             Int      @id
+  id             Int      @id @default(autoincrement())
   field          Field    @relation(fields: [field_id], references: [id])
   field_id       Int
   date           DateTime

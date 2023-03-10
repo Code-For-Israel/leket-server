@@ -4,7 +4,7 @@ import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { FieldsModule } from './fields/fields.module';
 import { SatelitesModule } from './satelites/satelites.module';
-import { AttractivenessesModule } from './attractivenesses/attractivenesses.module';
+import { AttractivenessModule } from './attractivenesses/attractiveness.module';
 import { MarketsModule } from './markets/markets.module';
 import { MissionsModule } from './missions/missions.module';
 
@@ -13,7 +13,7 @@ import { MissionsModule } from './missions/missions.module';
     PrismaModule,
     FieldsModule,
     SatelitesModule,
-    AttractivenessesModule,
+    AttractivenessModule,
     MarketsModule,
     MissionsModule,
   ],
