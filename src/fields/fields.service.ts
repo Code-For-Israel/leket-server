@@ -7,23 +7,22 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class FieldsService {
   constructor(private prisma: PrismaService) {}
   create(createFieldDto: CreateFieldDto) {
-    console.log(createFieldDto);
     return this.prisma.field.create({ data: createFieldDto });
   }
 
-  findAll() {
-    return this.prisma.field.findMany();
+  findAll(limit: number, offset: number) {
+    return this.prisma.field.findMany({ take: +limit, skip: +offset });
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} field`;
+    return this.prisma.field.findUnique({ where: { id } });
   }
 
   update(id: number, updateFieldDto: UpdateFieldDto) {
-    return `This action updates a #${id} field`;
+    return this.prisma.field.update({ where: { id }, data: updateFieldDto });
   }
 
   remove(id: number) {
-    return `This action removes a #${id} field`;
+    return this.prisma.field.delete({ where: { id } });
   }
 }

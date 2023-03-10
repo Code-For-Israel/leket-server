@@ -46,9 +46,9 @@ model Field {
   polygon          Json
   category         String
   status           FieldStatus
-  status_date      Int
-  delay_date       Int
-  created_date     Int
+  status_date      DateTime
+  delay_date       DateTime
+  created_date     DateTime         @default(now())
   Satelites        Satelite[]
   Missions         Mission[]
   Histories        History[]
@@ -114,6 +114,5 @@ model History {
   product_name Product
   farmer_id    String
 
-  @@id([date, field_id, product_name])
-  @@index([field_id, product_name])
+  @@id([field_id, product_name, date])
 }

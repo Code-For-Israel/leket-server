@@ -4,6 +4,6 @@ import { SatelitesController } from './satelites.controller';
 
 @Module({
   controllers: [SatelitesController],
-  providers: [SatelitesService]
+  providers: [SatelitesService],
 })
 export class SatelitesModule {}

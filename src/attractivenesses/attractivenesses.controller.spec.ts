@@ -11,7 +11,9 @@ describe('AttractivenessesController', () => {
       providers: [AttractivenessesService],
     }).compile();
 
-    controller = module.get<AttractivenessesController>(AttractivenessesController);
+    controller = module.get<AttractivenessesController>(
+      AttractivenessesController,
+    );
   });
 
   it('should be defined', () => {

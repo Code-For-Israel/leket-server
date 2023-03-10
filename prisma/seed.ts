@@ -28,9 +28,9 @@ async function main() {
       polygon: { p1: 123, p2: 255, p3: 275, p4: 3333 },
       category: 'what?',
       status: FieldStatus.IN_PROGRESS,
-      status_date: Date.now(),
-      delay_date: Date.now() - 100,
-      created_date: Date.now(),
+      status_date: new Date().toISOString(),
+      delay_date: new Date().toISOString(),
+      created_date: new Date().toISOString(),
     },
   });
 
@@ -49,9 +49,9 @@ async function main() {
       polygon: { p1: 123, p2: 255, p3: 275, p4: 3333 },
       category: 'what?',
       status: FieldStatus.IN_PROGRESS,
-      status_date: Date.now(),
-      delay_date: Date.now() - 100,
-      created_date: Date.now(),
+      status_date: new Date().toISOString(),
+      delay_date: new Date().toISOString(),
+      created_date: new Date().toISOString(),
     },
   });
 

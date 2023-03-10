@@ -35,11 +35,11 @@ export class CreateFieldDto {
   status: FieldStatus;
 
   @ApiProperty()
-  status_date: number;
+  status_date: Date;
 
   @ApiProperty()
-  delay_date: number;
+  delay_date: Date;
 
   @ApiProperty()
-  created_date: number;
+  created_date: Date;
 }
