@@ -11,6 +11,8 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class FieldEntity implements Field {
   @ApiProperty()
+  id: number;
+  @ApiProperty()
   category: string;
 
   @ApiProperty()
@@ -27,9 +29,6 @@ export class FieldEntity implements Field {
 
   @ApiProperty()
   farmer_id: string | null;
-
-  @ApiProperty()
-  id: number;
 
   @ApiProperty()
   latitude: number;

@@ -6,23 +6,29 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { MissionsService } from './missions.service';
 import { CreateMissionDto } from './dto/create-mission.dto';
 import { UpdateMissionDto } from './dto/update-mission.dto';
+import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { MissionEntity } from './entities/mission.entity';
 
 @Controller('missions')
+@ApiTags('Missions')
 export class MissionsController {
   constructor(private readonly missionsService: MissionsService) {}
 
   @Post()
+  @ApiCreatedResponse({ type: MissionEntity })
   create(@Body() createMissionDto: CreateMissionDto) {
     return this.missionsService.create(createMissionDto);
   }
 
   @Get()
-  findAll() {
-    return this.missionsService.findAll();
+  @ApiOkResponse({ type: MissionEntity, isArray: true })
+  findAll(@Query('limit') limit: number, @Query('offset') offset: number) {
+    return this.missionsService.findAll(limit, offset);
   }
 
   @Get(':id')

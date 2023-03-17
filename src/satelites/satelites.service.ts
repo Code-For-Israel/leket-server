@@ -1,26 +1,35 @@
 import { Injectable } from '@nestjs/common';
 import { CreateSateliteDto } from './dto/create-satelite.dto';
 import { UpdateSateliteDto } from './dto/update-satelite.dto';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class SatelitesService {
+  constructor(private prisma: PrismaService) {}
   create(createSateliteDto: CreateSateliteDto) {
-    return 'This action adds a new satelite';
+    return this.prisma.satelite.create({ data: createSateliteDto });
   }
 
-  findAll() {
-    return `This action returns all satelites`;
+  findAll(limit: number, offset: number) {
+    return this.prisma.satelite.findMany({ take: +limit, skip: +offset });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} satelite`;
+  findOne(field_id: number, date: Date) {
+    return this.prisma.satelite.findUnique({
+      where: { field_id_date: { field_id, date } },
+    });
   }
 
-  update(id: number, updateSateliteDto: UpdateSateliteDto) {
-    return `This action updates a #${id} satelite`;
+  update(field_id: number, date: Date, updateSateliteDto: UpdateSateliteDto) {
+    return this.prisma.satelite.update({
+      where: { field_id_date: { field_id, date } },
+      data: updateSateliteDto,
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} satelite`;
+  remove(field_id: number, date: Date) {
+    return this.prisma.satelite.delete({
+      where: { field_id_date: { field_id, date } },
+    });
   }
 }

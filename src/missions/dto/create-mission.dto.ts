@@ -15,7 +15,7 @@ export class CreateMissionDto {
   amount_kg: number;
 
   @ApiProperty()
-  was_ripe: boolean;
+  was_ripe: string;
 
   @ApiProperty()
   was_picked: boolean;

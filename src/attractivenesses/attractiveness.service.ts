@@ -10,12 +10,12 @@ export class AttractivenessService {
     return this.prisma.attractiveness.create({ data: createAttractivenessDto });
   }
 
-  findAll() {
-    return `This action returns all attractiveness's`;
+  findAll(limit: number, offset: number) {
+    return this.prisma.attractiveness.findMany({ take: +limit, skip: +offset });
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} attractiveness`;
+    return this.prisma.attractiveness.findUnique({ where: { id } });
   }
 
   update(id: number, updateAttractivenessDto: UpdateAttractivenessDto) {
@@ -26,6 +26,6 @@ export class AttractivenessService {
   }
 
   remove(id: number) {
-    return `This action removes a #${id} attractiveness`;
+    return this.prisma.attractiveness.delete({ where: { id } });
   }
 }
