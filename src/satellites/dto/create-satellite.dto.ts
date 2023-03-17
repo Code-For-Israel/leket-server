@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class CreateSateliteDto {
+export class CreateSatelliteDto {
   @ApiProperty()
   field_id: number;
   @ApiProperty()

@@ -3,7 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { FieldsModule } from './fields/fields.module';
-import { SatelitesModule } from './satelites/satelites.module';
+import { SatellitesModule } from './satellites/satellites.module';
 import { AttractivenessModule } from './attractivenesses/attractiveness.module';
 import { MarketsModule } from './markets/markets.module';
 import { MissionsModule } from './missions/missions.module';
@@ -12,7 +12,7 @@ import { MissionsModule } from './missions/missions.module';
   imports: [
     PrismaModule,
     FieldsModule,
-    SatelitesModule,
+    SatellitesModule,
     AttractivenessModule,
     MarketsModule,
     MissionsModule,

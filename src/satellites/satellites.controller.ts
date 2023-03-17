@@ -8,46 +8,46 @@ import {
   Delete,
   Query,
 } from '@nestjs/common';
-import { SatelitesService } from './satelites.service';
-import { CreateSateliteDto } from './dto/create-satelite.dto';
-import { UpdateSateliteDto } from './dto/update-satelite.dto';
+import { SatellitesService } from './satellites.service';
+import { CreateSatelliteDto } from './dto/create-satellite.dto';
+import { UpdateSatelliteDto } from './dto/update-satellite.dto';
 import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { SateliteEntity } from './entities/satelite.entity';
 
-@Controller('satelites')
+@Controller('satellites')
 @ApiTags('Satellites')
-export class SatelitesController {
-  constructor(private readonly satelitesService: SatelitesService) {}
+export class SatellitesController {
+  constructor(private readonly satellitesService: SatellitesService) {}
 
   @Post()
   @ApiCreatedResponse({ type: SateliteEntity })
-  create(@Body() createSateliteDto: CreateSateliteDto) {
-    return this.satelitesService.create(createSateliteDto);
+  create(@Body() createSateliteDto: CreateSatelliteDto) {
+    return this.satellitesService.create(createSateliteDto);
   }
 
   @Get()
   @ApiOkResponse({ type: SateliteEntity, isArray: true })
   findAll(@Query('limit') limit: number, @Query('offset') offset: number) {
-    return this.satelitesService.findAll(limit, offset);
+    return this.satellitesService.findAll(limit, offset);
   }
 
   @Get(':id')
   @ApiOkResponse({ type: SateliteEntity })
   findOne(@Param('field_id') id: string, @Param('date') date: Date) {
-    return this.satelitesService.findOne(+id, date);
+    return this.satellitesService.findOne(+id, date);
   }
 
   @Patch(':id')
   update(
     @Param('id') id: string,
     @Param('date') date: Date,
-    @Body() updateSateliteDto: UpdateSateliteDto,
+    @Body() updateSateliteDto: UpdateSatelliteDto,
   ) {
-    return this.satelitesService.update(+id, date, updateSateliteDto);
+    return this.satellitesService.update(+id, date, updateSateliteDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string, @Param('date') date: Date) {
-    return this.satelitesService.remove(+id, date);
+    return this.satellitesService.remove(+id, date);
   }
 }

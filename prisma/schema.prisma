@@ -49,7 +49,7 @@ model Field {
   status_date      DateTime
   delay_date       DateTime
   created_date     DateTime         @default(now())
-  Satelites        Satelite[]
+  Satellites       Satellite[]
   Missions         Mission[]
   Histories        History[]
   Attractivenesses Attractiveness[]
@@ -59,7 +59,7 @@ model Field {
   @@index([familiarity])
 }
 
-model Satelite {
+model Satellite {
   field      Field    @relation(fields: [field_id], references: [id])
   field_id   Int
   date       DateTime
@@ -70,15 +70,15 @@ model Satelite {
 }
 
 model Attractiveness {
-  id             Int      @id @default(autoincrement())
-  field          Field    @relation(fields: [field_id], references: [id])
-  field_id       Int
-  date           DateTime
-  mission_score  Float
-  market_score   Float
-  satelite_score Float
-  average_score  Float
-  like           Boolean
+  id              Int      @id @default(autoincrement())
+  field           Field    @relation(fields: [field_id], references: [id])
+  field_id        Int
+  date            DateTime
+  mission_score   Float
+  market_score    Float
+  satellite_score Float
+  average_score   Float
+  like            Boolean
 
   @@index([field_id, date])
 }
