@@ -3,6 +3,8 @@ import { Attractiveness } from '@prisma/client';
 
 export class AttractivenessEntity implements Attractiveness {
   @ApiProperty()
+  satellite_score: number;
+  @ApiProperty()
   field_id: number;
   @ApiProperty()
   date: Date;
@@ -10,8 +12,6 @@ export class AttractivenessEntity implements Attractiveness {
   mission_score: number;
   @ApiProperty()
   market_score: number;
-  @ApiProperty()
-  satelite_score: number;
   @ApiProperty()
   average_score: number;
   @ApiProperty()

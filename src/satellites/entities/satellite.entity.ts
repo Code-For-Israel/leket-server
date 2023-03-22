@@ -1,7 +1,7 @@
-import { Prisma, Satelite } from '@prisma/client';
+import { Prisma, Satellite } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class SateliteEntity implements Satelite {
+export class SatelliteEntity implements Satellite {
   @ApiProperty()
   field_id: number;
   @ApiProperty()

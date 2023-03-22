@@ -14,7 +14,7 @@ export class CreateAttractivenessDto {
   market_score: number;
 
   @ApiProperty()
-  satelite_score: number;
+  satellite_score: number;
 
   @ApiProperty()
   average_score: number;

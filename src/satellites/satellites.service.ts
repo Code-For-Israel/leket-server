@@ -6,8 +6,8 @@ import { PrismaService } from '../prisma/prisma.service';
 @Injectable()
 export class SatellitesService {
   constructor(private prisma: PrismaService) {}
-  create(createSateliteDto: CreateSatelliteDto) {
-    return this.prisma.satellite.create({ data: createSateliteDto });
+  create(createSatelliteDto: CreateSatelliteDto) {
+    return this.prisma.satellite.create({ data: createSatelliteDto });
   }
 
   findAll(limit: number, offset: number) {
@@ -20,10 +20,10 @@ export class SatellitesService {
     });
   }
 
-  update(field_id: number, date: Date, updateSateliteDto: UpdateSatelliteDto) {
+  update(field_id: number, date: Date, updateSatelliteDto: UpdateSatelliteDto) {
     return this.prisma.satellite.update({
       where: { field_id_date: { field_id, date } },
-      data: updateSateliteDto,
+      data: updateSatelliteDto,
     });
   }
 
