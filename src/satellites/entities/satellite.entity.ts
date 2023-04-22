@@ -3,6 +3,8 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class SatelliteEntity implements Satellite {
   @ApiProperty()
+  id: number;
+  @ApiProperty()
   field_id: number;
   @ApiProperty()
   date: Date;

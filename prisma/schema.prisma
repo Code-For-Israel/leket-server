@@ -34,39 +34,42 @@ enum Product {
 }
 
 model Field {
-  id               Int              @id @default(autoincrement())
-  name             String
-  product_name     String?
-  farmer_id        String?
-  region           Region
-  familiarity      Familiarity
-  familiarity_desc String
-  latitude         Float
-  longitude        Float
-  polygon          Json
-  category         String
-  status           FieldStatus
-  status_date      DateTime
-  delay_date       DateTime
-  created_date     DateTime         @default(now())
-  Satellites       Satellite[]
-  Missions         Mission[]
-  Histories        History[]
-  Attractivenesses Attractiveness[]
+  id                     Int              @id @default(autoincrement())
+  name                   String
+  product_name           Product?
+  farmer_id              String?
+  region                 Region
+  familiarity            Familiarity
+  familiarity_desc       String
+  latitude               Float
+  longitude              Float
+  polygon                Float[]
+  Satellites             Satellite?       @relation(fields: [latest_satelite_metric], references: [id])
+  latest_satelite_metric Int?
+  category               String
+  status                 FieldStatus
+  status_date            DateTime
+  delay_date             DateTime
+  created_date           DateTime         @default(now())
+  Missions               Mission[]
+  Histories              History[]
+  Attractivenesses       Attractiveness[]
 
   @@index([farmer_id])
   @@index([category])
   @@index([familiarity])
+  @@index([product_name])
 }
 
 model Satellite {
-  field      Field    @relation(fields: [field_id], references: [id])
-  field_id   Int
+  id         Int      @id @default(autoincrement())
   date       DateTime
+  field_id   Int
   statistics Json
   like       Boolean
+  Field      Field[]
 
-  @@id([field_id, date])
+  @@index([field_id])
 }
 
 model Attractiveness {
@@ -89,7 +92,7 @@ model Market {
   product_name Product
   price        Float
 
-  @@index([product_name, date])
+  @@index([product_name])
 }
 
 model Mission {
@@ -108,11 +111,12 @@ model Mission {
 }
 
 model History {
+  id           Int      @id @default(autoincrement())
+  date         DateTime @default(now())
   field        Field    @relation(fields: [field_id], references: [id])
   field_id     Int
-  date         DateTime
   product_name Product
   farmer_id    String
 
-  @@id([field_id, product_name, date])
+  @@index([field_id, product_name])
 }

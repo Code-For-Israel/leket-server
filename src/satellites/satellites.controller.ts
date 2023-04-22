@@ -1,11 +1,11 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
   Query,
 } from '@nestjs/common';
 import { SatellitesService } from './satellites.service';
@@ -33,21 +33,24 @@ export class SatellitesController {
 
   @Get(':id')
   @ApiOkResponse({ type: SatelliteEntity })
-  findOne(@Param('field_id') id: string, @Param('date') date: Date) {
-    return this.satellitesService.findOne(+id, date);
+  findOne(@Param('field_id') id: number) {
+    return this.satellitesService.findOne(+id);
   }
 
   @Patch(':id')
   update(
-    @Param('id') id: string,
-    @Param('date') date: Date,
+    @Param('id') id: number,
     @Body() updateSatelliteDto: UpdateSatelliteDto,
   ) {
-    return this.satellitesService.update(+id, date, updateSatelliteDto);
+    try {
+      return this.satellitesService.update(+id, updateSatelliteDto);
+    } catch (e) {
+      console.error('Error updating satellite', e);
+    }
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string, @Param('date') date: Date) {
-    return this.satellitesService.remove(+id, date);
+  remove(@Param('id') id: string) {
+    return this.satellitesService.remove(+id);
   }
 }

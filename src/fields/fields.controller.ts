@@ -1,4 +1,5 @@
 import {
+  Header,
   Controller,
   Get,
   Post,
@@ -26,6 +27,11 @@ export class FieldsController {
   }
 
   @Get()
+  @Header('Access-Control-Allow-Origin', '*')
+  @Header(
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Accept',
+  )
   @ApiOkResponse({ type: FieldEntity, isArray: true })
   findAll(@Query('limit') limit: number, @Query('offset') offset: number) {
     return this.fieldsService.findAll(limit, offset);

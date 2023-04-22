@@ -7,6 +7,7 @@ import { SatellitesModule } from './satellites/satellites.module';
 import { AttractivenessModule } from './attractivenesses/attractiveness.module';
 import { MarketsModule } from './markets/markets.module';
 import { MissionsModule } from './missions/missions.module';
+import { HistoriesModule } from './histories/histories.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { MissionsModule } from './missions/missions.module';
     AttractivenessModule,
     MarketsModule,
     MissionsModule,
+    HistoriesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

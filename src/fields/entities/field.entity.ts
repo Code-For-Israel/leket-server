@@ -4,22 +4,20 @@ import {
   Familiarity,
   Field,
   FieldStatus,
-  Prisma,
   Region,
+  Product,
 } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class FieldEntity implements Field {
   @ApiProperty()
   id: number;
-  @ApiProperty()
-  category: string;
 
   @ApiProperty()
-  created_date: Date;
+  name: string;
 
   @ApiProperty()
-  delay_date: Date;
+  product_name: Product;
 
   @ApiProperty()
   familiarity: Familiarity;
@@ -31,26 +29,32 @@ export class FieldEntity implements Field {
   farmer_id: string | null;
 
   @ApiProperty()
+  region: Region;
+
+  @ApiProperty()
   latitude: number;
 
   @ApiProperty()
   longitude: number;
 
   @ApiProperty()
-  name: string;
+  polygon: number[];
 
   @ApiProperty()
-  polygon: Prisma.JsonValue;
+  latest_satelite_metric: number;
 
   @ApiProperty()
-  product_name: string | null;
-
-  @ApiProperty()
-  region: Region;
+  category: string;
 
   @ApiProperty()
   status: FieldStatus;
 
   @ApiProperty()
   status_date: Date;
+
+  @ApiProperty()
+  delay_date: Date;
+
+  @ApiProperty()
+  created_date: Date;
 }

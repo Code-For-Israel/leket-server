@@ -26,7 +26,10 @@ export class CreateFieldDto {
   longitude: number;
 
   @ApiProperty()
-  polygon: number;
+  polygon: number[];
+
+  @ApiProperty()
+  latest_satelite_metric: number;
 
   @ApiProperty()
   category: string;

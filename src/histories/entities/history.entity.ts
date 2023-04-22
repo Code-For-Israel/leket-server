@@ -1,13 +1,15 @@
-import { Prisma } from '@prisma/client';
+import { Product } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class CreateSatelliteDto {
+export class History {
+  @ApiProperty()
+  id: number;
   @ApiProperty()
   date: Date;
   @ApiProperty()
   field_id: number;
   @ApiProperty()
-  statistics: Prisma.JsonValue;
+  product_name: Product;
   @ApiProperty()
-  like: boolean;
+  farmer_id: string;
 }

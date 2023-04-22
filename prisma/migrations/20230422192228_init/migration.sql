@@ -14,14 +14,15 @@ CREATE TYPE "Product" AS ENUM ('CUCAMBER', 'ONION', 'TOMATO');
 CREATE TABLE "Field" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
-    "product_name" TEXT,
+    "product_name" "Product",
     "farmer_id" TEXT,
     "region" "Region" NOT NULL,
     "familiarity" "Familiarity" NOT NULL,
     "familiarity_desc" TEXT NOT NULL,
     "latitude" DOUBLE PRECISION NOT NULL,
     "longitude" DOUBLE PRECISION NOT NULL,
-    "polygon" JSONB NOT NULL,
+    "polygon" DOUBLE PRECISION[],
+    "latest_satelite_metric" INTEGER,
     "category" TEXT NOT NULL,
     "status" "FieldStatus" NOT NULL,
     "status_date" TIMESTAMP(3) NOT NULL,
@@ -33,12 +34,13 @@ CREATE TABLE "Field" (
 
 -- CreateTable
 CREATE TABLE "Satellite" (
-    "field_id" INTEGER NOT NULL,
+    "id" SERIAL NOT NULL,
     "date" TIMESTAMP(3) NOT NULL,
+    "field_id" INTEGER NOT NULL,
     "statistics" JSONB NOT NULL,
     "like" BOOLEAN NOT NULL,
 
-    CONSTRAINT "Satellite_pkey" PRIMARY KEY ("field_id","date")
+    CONSTRAINT "Satellite_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -81,12 +83,13 @@ CREATE TABLE "Mission" (
 
 -- CreateTable
 CREATE TABLE "History" (
+    "id" SERIAL NOT NULL,
+    "date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "field_id" INTEGER NOT NULL,
-    "date" TIMESTAMP(3) NOT NULL,
     "product_name" "Product" NOT NULL,
     "farmer_id" TEXT NOT NULL,
 
-    CONSTRAINT "History_pkey" PRIMARY KEY ("field_id","product_name","date")
+    CONSTRAINT "History_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -99,10 +102,16 @@ CREATE INDEX "Field_category_idx" ON "Field"("category");
 CREATE INDEX "Field_familiarity_idx" ON "Field"("familiarity");
 
 -- CreateIndex
+CREATE INDEX "Field_product_name_idx" ON "Field"("product_name");
+
+-- CreateIndex
+CREATE INDEX "Satellite_field_id_idx" ON "Satellite"("field_id");
+
+-- CreateIndex
 CREATE INDEX "Attractiveness_field_id_date_idx" ON "Attractiveness"("field_id", "date");
 
 -- CreateIndex
-CREATE INDEX "Market_product_name_date_idx" ON "Market"("product_name", "date");
+CREATE INDEX "Market_product_name_idx" ON "Market"("product_name");
 
 -- CreateIndex
 CREATE INDEX "Mission_field_id_product_name_idx" ON "Mission"("field_id", "product_name");
@@ -110,8 +119,11 @@ CREATE INDEX "Mission_field_id_product_name_idx" ON "Mission"("field_id", "produ
 -- CreateIndex
 CREATE INDEX "Mission_product_name_idx" ON "Mission"("product_name");
 
+-- CreateIndex
+CREATE INDEX "History_field_id_product_name_idx" ON "History"("field_id", "product_name");
+
 -- AddForeignKey
-ALTER TABLE "Satellite" ADD CONSTRAINT "Satellite_field_id_fkey" FOREIGN KEY ("field_id") REFERENCES "Field"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Field" ADD CONSTRAINT "Field_latest_satelite_metric_fkey" FOREIGN KEY ("latest_satelite_metric") REFERENCES "Satellite"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Attractiveness" ADD CONSTRAINT "Attractiveness_field_id_fkey" FOREIGN KEY ("field_id") REFERENCES "Field"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
