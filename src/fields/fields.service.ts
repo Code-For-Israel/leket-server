@@ -23,6 +23,10 @@ export class FieldsService {
     return this.prisma.field.findUnique({ where: { id } });
   }
 
+  findByFilter(updateFilter: object) {
+    return this.prisma.field.findMany({ where: updateFilter });
+  }
+
   async update(id: number, updateFieldDto: UpdateFieldDto) {
     try {
       const updateFieldRes = await this.prisma.field.update({

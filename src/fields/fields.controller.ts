@@ -12,6 +12,7 @@ import {
 import { FieldsService } from './fields.service';
 import { CreateFieldDto } from './dto/create-field.dto';
 import { UpdateFieldDto } from './dto/update-field.dto';
+import { FilterFieldDto } from './dto/filter-field.dto';
 import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { FieldEntity } from './entities/field.entity';
 
@@ -22,8 +23,13 @@ export class FieldsController {
 
   @Post()
   @ApiCreatedResponse({ type: FieldEntity })
-  create(@Body() createFieldDto: CreateFieldDto) {
-    return this.fieldsService.create(createFieldDto);
+  async create(@Body() createFieldDto: CreateFieldDto) {
+    try {
+      const fieldCreated = await this.fieldsService.create(createFieldDto);
+      console.log('Field created', fieldCreated);
+    } catch (error) {
+      console.error('Error creating field', error);
+    }
   }
 
   @Get()
@@ -33,14 +39,37 @@ export class FieldsController {
     'Origin, X-Requested-With, Content-Type, Accept',
   )
   @ApiOkResponse({ type: FieldEntity, isArray: true })
-  findAll(@Query('limit') limit: number, @Query('offset') offset: number) {
-    return this.fieldsService.findAll(limit, offset);
+  async findAll(
+    @Query('limit') limit: number,
+    @Query('offset') offset: number,
+  ) {
+    try {
+      const findAllRes = await this.fieldsService.findAll(limit, offset);
+      console.log('All fields', findAllRes);
+    } catch (error) {
+      console.error('Error finding all fields', error);
+    }
   }
 
   @Get(':id')
   @ApiOkResponse({ type: FieldEntity })
   findOne(@Param('id') id: string) {
-    return this.fieldsService.findOne(+id);
+    try {
+      const fundOneRes = this.fieldsService.findOne(+id);
+      console.log('Field found by id', fundOneRes);
+    } catch (error) {
+      console.error('Error finding field by id', error);
+    }
+  }
+
+  @Post('/update')
+  @ApiOkResponse({ type: FieldEntity })
+  findByFilter(@Body() filter: FilterFieldDto) {
+    try {
+      return this.fieldsService.findByFilter(filter);
+    } catch (error) {
+      console.log('Error finding field by filter', error);
+    }
   }
 
   @Patch(':id')
