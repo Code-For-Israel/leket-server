@@ -27,6 +27,7 @@ export class FieldsController {
     try {
       const fieldCreated = await this.fieldsService.create(createFieldDto);
       console.log('Field created', fieldCreated);
+      return fieldCreated;
     } catch (error) {
       console.error('Error creating field', error);
     }
@@ -46,6 +47,7 @@ export class FieldsController {
     try {
       const findAllRes = await this.fieldsService.findAll(limit, offset);
       console.log('All fields', findAllRes);
+      return findAllRes;
     } catch (error) {
       console.error('Error finding all fields', error);
     }
@@ -57,6 +59,7 @@ export class FieldsController {
     try {
       const fundOneRes = this.fieldsService.findOne(+id);
       console.log('Field found by id', fundOneRes);
+      return fundOneRes;
     } catch (error) {
       console.error('Error finding field by id', error);
     }
