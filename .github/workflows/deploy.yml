@@ -35,5 +35,5 @@ jobs:
         ECR_REPOSITORY: leket-israel-backend
         IMAGE_TAG: leket-israel-backend-${{ github.run_id }}
       run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f src/backend.Dockerfile .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
