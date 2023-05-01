@@ -7,9 +7,6 @@ RUN npm install
 RUN apk add --update --no-cache openssl1.1-compat
 COPY . .
 
-# COPY ENV variable
-COPY .env ./
-
 # Prisma configuration
 COPY ./prisma ./prisma
 RUN npx prisma generate
