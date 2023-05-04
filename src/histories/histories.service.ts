@@ -18,6 +18,10 @@ export class HistoriesService {
     return this.prisma.history.findUnique({ where: { id } });
   }
 
+  findByFilter(updateFilter: object) {
+    return this.prisma.history.findMany({ where: updateFilter });
+  }
+
   update(id: number, updateHistoryDto: UpdateHistoryDto) {
     return this.prisma.history.update({
       where: { id },

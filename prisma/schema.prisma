@@ -10,7 +10,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum FieldStatus {
+enum FieldCategory {
   BUILDING
   TUNNELS
   CHAIN_HOUSE
@@ -19,7 +19,7 @@ enum FieldStatus {
   OPEN_SPACE
 }
 
-enum FieldCategory {
+enum FieldStatus {
   IRRELEVANT
   TAKEN_CARE_OF
   REQUIRES_CARE
@@ -84,8 +84,8 @@ enum Product {
   NECTARINE
   BEET
   CELERY
-  TOMATOES
-  CHERRY_TOMATOES
+  TOMATO
+  CHERRY_TOMATO
   BEET_LEAVES
   GRAPE
   POMELA
@@ -130,8 +130,7 @@ model Field {
   latitude               Float
   longitude              Float
   polygon                Float[]
-  Satellites             Satellite?       @relation(fields: [latest_satelite_metric], references: [id])
-  latest_satelite_metric Int?
+  latest_satelite_metric Float?
   category               FieldCategory
   status                 FieldStatus
   status_date            DateTime
@@ -139,21 +138,23 @@ model Field {
   created_date           DateTime         @default(now())
   Missions               Mission[]
   Histories              History[]
+  Satellites             Satellite[]
   Attractivenesses       Attractiveness[]
 
-  @@index([farmer_id])
   @@index([category])
   @@index([familiarity])
-  @@index([product_name])
+  @@index([region])
+  @@index([status])
+  @@index([product_name, region, status])
 }
 
 model Satellite {
   id         Int      @id @default(autoincrement())
   date       DateTime
+  field      Field    @relation(fields: [field_id], references: [id])
   field_id   Int
   statistics Json
   like       Boolean
-  Field      Field[]
 
   @@index([field_id])
 }

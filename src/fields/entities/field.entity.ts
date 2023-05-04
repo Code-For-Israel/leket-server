@@ -6,6 +6,7 @@ import {
   FieldStatus,
   Region,
   Product,
+  FieldCategory,
 } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -44,7 +45,7 @@ export class FieldEntity implements Field {
   latest_satelite_metric: number;
 
   @ApiProperty()
-  category: string;
+  category: FieldCategory;
 
   @ApiProperty()
   status: FieldStatus;

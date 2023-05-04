@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Familiarity, FieldStatus, Product, Region } from '@prisma/client';
+import {
+  Familiarity,
+  FieldCategory,
+  FieldStatus,
+  Product,
+  Region,
+} from '@prisma/client';
 export class CreateFieldDto {
   @ApiProperty()
   name: string;
@@ -28,11 +34,11 @@ export class CreateFieldDto {
   @ApiProperty()
   polygon: number[];
 
-  @ApiProperty()
-  latest_satelite_metric: number;
+  @ApiProperty({ required: false })
+  latest_satelite_metric?: number;
 
   @ApiProperty()
-  category: string;
+  category: FieldCategory;
 
   @ApiProperty()
   status: FieldStatus;

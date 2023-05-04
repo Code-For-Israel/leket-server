@@ -2,6 +2,7 @@
 
 import {
   Familiarity,
+  FieldCategory,
   FieldStatus,
   PrismaClient,
   Product,
@@ -12,7 +13,7 @@ import {
 const prisma = new PrismaClient();
 
 async function main() {
-  // create two dummy articles
+  // create two dummy fields
   const post1 = await prisma.field.upsert({
     where: { id: 1 },
     update: {},
@@ -21,13 +22,13 @@ async function main() {
       product_name: Product.TOMATO,
       farmer_id: '123s',
       region: Region.CENTER,
-      familiarity: Familiarity.KNOWN,
+      familiarity: Familiarity.KNOWN_PICKED,
       familiarity_desc: 'talked yesterday',
       latitude: 123.546,
       longitude: 234.444,
       polygon: [1, 2, 3, 4, 5],
-      category: 'what?',
-      status: FieldStatus.IN_PROGRESS,
+      category: FieldCategory.BUILDING,
+      status: FieldStatus.IRRELEVANT,
       status_date: new Date().toISOString(),
       delay_date: new Date().toISOString(),
       created_date: new Date().toISOString(),
@@ -39,16 +40,16 @@ async function main() {
     update: {},
     create: {
       name: 'field2',
-      product_name: Product.CUCAMBER,
+      product_name: Product.CUCUMBER,
       farmer_id: '1223s',
       region: Region.CENTER,
-      familiarity: Familiarity.KNOWN,
+      familiarity: Familiarity.KNOWN_PICKED,
       familiarity_desc: 'talked yesterday2',
       latitude: 123.546,
       longitude: 234.444,
       polygon: [1, 2, 3, 4, 5],
-      category: 'what?',
-      status: FieldStatus.IN_PROGRESS,
+      category: FieldCategory.CHAIN_HOUSE,
+      status: FieldStatus.UNDER_THE_CARE_OF_AN_AREA_MANAGER,
       status_date: new Date().toISOString(),
       delay_date: new Date().toISOString(),
       created_date: new Date().toISOString(),
