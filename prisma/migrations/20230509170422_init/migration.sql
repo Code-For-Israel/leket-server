@@ -1,3 +1,6 @@
+-- CreateExtension
+CREATE EXTENSION IF NOT EXISTS "postgis" WITH VERSION "3.3.2";
+
 -- CreateEnum
 CREATE TYPE "FieldCategory" AS ENUM ('BUILDING', 'TUNNELS', 'CHAIN_HOUSE', 'GROWTH_HOUSES', 'NETWORK_COVERAGE', 'OPEN_SPACE');
 
@@ -24,7 +27,7 @@ CREATE TABLE "Field" (
     "familiarity_desc" TEXT NOT NULL,
     "latitude" DOUBLE PRECISION NOT NULL,
     "longitude" DOUBLE PRECISION NOT NULL,
-    "polygon" DOUBLE PRECISION[],
+    "polygon" polygon NOT NULL,
     "latest_satelite_metric" DOUBLE PRECISION,
     "category" "FieldCategory" NOT NULL,
     "status" "FieldStatus" NOT NULL,

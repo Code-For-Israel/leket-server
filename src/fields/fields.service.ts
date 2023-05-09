@@ -3,7 +3,7 @@ import { CreateFieldDto } from './dto/create-field.dto';
 import { UpdateFieldDto } from './dto/update-field.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { HistoriesService } from '../histories/histories.service';
-import { Field } from '@prisma/client';
+import { Field, Prisma } from '@prisma/client';
 
 @Injectable()
 export class FieldsService {
@@ -11,19 +11,38 @@ export class FieldsService {
     private prisma: PrismaService,
     private historiesService: HistoriesService,
   ) {}
-  create(createFieldDto: CreateFieldDto) {
-    return this.prisma.field.create({ data: createFieldDto });
+  async create(createFieldDto: CreateFieldDto) {
+    return await this.prisma // queryRaw is used since polygon is not supported by Prisma
+      .$queryRaw(Prisma.sql`INSERT INTO "Field" (name, product_name, farmer_id, region, familiarity,
+            familiarity_desc, latitude, longitude, polygon, latest_satelite_metric,
+            category, status, status_date, delay_date, created_date)
+             VALUES (${createFieldDto.name}, CAST(${createFieldDto.product_name} AS "Product"), ${createFieldDto.farmer_id}, CAST(${createFieldDto.region} AS "Region"),
+                     CAST(${createFieldDto.familiarity} AS "Familiarity"), ${createFieldDto.familiarity_desc}, ${createFieldDto.latitude}, ${createFieldDto.longitude}, CAST(ST_GeomFromText(${createFieldDto.polygon}) AS polygon),
+                     ${createFieldDto.latest_satelite_metric}, CAST(${createFieldDto.category} AS "FieldCategory"), CAST(${createFieldDto.status} AS "FieldStatus"),
+                     CAST(${createFieldDto.status_date} AS date), CAST(${createFieldDto.delay_date} AS date), CAST(${createFieldDto.created_date} AS date))
+             RETURNING id, name, product_name, farmer_id, region, familiarity,
+            familiarity_desc, latitude, longitude, CAST(polygon AS varchar), latest_satelite_metric,
+            category, status, status_date, delay_date, created_date;`);
   }
 
   findAll(limit: number, offset: number) {
-    return this.prisma.field.findMany({ take: +limit, skip: +offset });
+    return this.prisma
+      .$queryRaw`SELECT id, name, product_name, farmer_id, region, familiarity,
+            familiarity_desc, latitude, longitude, CAST(polygon AS varchar) AS polygon, latest_satelite_metric,
+            category, status, status_date, delay_date, created_date
+             FROM "Field" LIMIT ${+limit} OFFSET ${+offset};`;
   }
 
   findOne(id: number) {
-    return this.prisma.field.findUnique({ where: { id } });
+    return this.prisma
+      .$queryRaw`SELECT id, name, product_name, farmer_id, region, familiarity,
+            familiarity_desc, latitude, longitude, CAST(polygon AS varchar) AS polygon, latest_satelite_metric,
+            category, status, status_date, delay_date, created_date
+             FROM "Field" WHERE "Field".id = ${id};`;
   }
 
   findByFilter(updateFilter: object) {
+    // TODO: add the functionality to filter by polygon (currently impossible)
     return this.prisma.field.findMany({ where: updateFilter });
   }
 

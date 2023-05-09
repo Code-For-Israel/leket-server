@@ -4,6 +4,7 @@ import {
   Familiarity,
   FieldCategory,
   FieldStatus,
+  Prisma,
   PrismaClient,
   Product,
   Region,
@@ -14,49 +15,58 @@ const prisma = new PrismaClient();
 
 async function main() {
   // create two dummy fields
-  const post1 = await prisma.field.upsert({
-    where: { id: 1 },
-    update: {},
-    create: {
-      name: 'field1',
-      product_name: Product.TOMATO,
-      farmer_id: '123s',
-      region: Region.CENTER,
-      familiarity: Familiarity.KNOWN_PICKED,
-      familiarity_desc: 'talked yesterday',
-      latitude: 123.546,
-      longitude: 234.444,
-      polygon: [1, 2, 3, 4, 5],
-      category: FieldCategory.BUILDING,
-      status: FieldStatus.IRRELEVANT,
-      status_date: new Date().toISOString(),
-      delay_date: new Date().toISOString(),
-      created_date: new Date().toISOString(),
-    },
-  });
+  await create_field(
+    5,
+    'field1',
+    Product.CUCUMBER,
+    '123s',
+    Region.CENTER,
+    Familiarity.KNOWN_PICKED,
+    'talked yesterday',
+    123.546,
+    234.444,
+    'POLYGON((0 0, 0 10, 10 10, 10 0, 0 0))',
+    0,
+    FieldCategory.BUILDING,
+    FieldStatus.IRRELEVANT,
+    new Date().toISOString(),
+    new Date().toISOString(),
+    new Date().toISOString(),
+  );
+}
 
-  const post2 = await prisma.field.upsert({
-    where: { id: 2 },
-    update: {},
-    create: {
-      name: 'field2',
-      product_name: Product.CUCUMBER,
-      farmer_id: '1223s',
-      region: Region.CENTER,
-      familiarity: Familiarity.KNOWN_PICKED,
-      familiarity_desc: 'talked yesterday2',
-      latitude: 123.546,
-      longitude: 234.444,
-      polygon: [1, 2, 3, 4, 5],
-      category: FieldCategory.CHAIN_HOUSE,
-      status: FieldStatus.UNDER_THE_CARE_OF_AN_AREA_MANAGER,
-      status_date: new Date().toISOString(),
-      delay_date: new Date().toISOString(),
-      created_date: new Date().toISOString(),
-    },
-  });
+async function create_field(
+  id: number,
+  name: string,
+  product_name: Product,
+  farmer_id: string,
+  region: Region,
+  familiarity: Familiarity,
+  familiarity_desc,
+  latitude: number,
+  longitude: number,
+  polygon: string,
+  latest_satelite_metric: number,
+  category: FieldCategory,
+  status: FieldStatus,
+  status_date: string,
+  delay_date: string,
+  created_date: string,
+) {
+  const post1 =
+    await prisma.$queryRaw(Prisma.sql`INSERT INTO "Field" (id, name, product_name, farmer_id, region, familiarity,
+            familiarity_desc, latitude, longitude, polygon, latest_satelite_metric,
+            category, status, status_date, delay_date, created_date)
+             VALUES (${id}, ${name}, CAST(${product_name} AS "Product"), ${farmer_id}, CAST(${region} AS "Region"),
+                     CAST(${familiarity} AS "Familiarity"), ${familiarity_desc}, ${latitude}, ${longitude}, CAST(ST_GeomFromText(${polygon}) AS polygon),
+                     ${latest_satelite_metric}, CAST(${category} AS "FieldCategory"), CAST(${status} AS "FieldStatus"),
+                     CAST(${status_date} AS date), CAST(${delay_date} AS date), CAST(${created_date} AS date))
+             ON CONFLICT (id) DO NOTHING
+             RETURNING id, name, product_name, farmer_id, region, familiarity,
+            familiarity_desc, latitude, longitude, CAST(polygon AS varchar), latest_satelite_metric,
+            category, status, status_date, delay_date, created_date;`);
 
-  console.log({ post1, post2 });
+  console.log(post1);
 }
 
 // execute the main function

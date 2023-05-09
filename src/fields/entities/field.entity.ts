@@ -39,7 +39,7 @@ export class FieldEntity implements Field {
   longitude: number;
 
   @ApiProperty()
-  polygon: number[];
+  polygon: string;
 
   @ApiProperty()
   latest_satelite_metric: number;
