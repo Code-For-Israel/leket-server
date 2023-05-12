@@ -7,12 +7,13 @@ import { Field, Prisma } from '@prisma/client';
 
 @Injectable()
 export class FieldsService {
+  //TODO: in general, we should add the support for polygons.
   constructor(
     private prisma: PrismaService,
     private historiesService: HistoriesService,
   ) {}
   async create(createFieldDto: CreateFieldDto) {
-    return await this.prisma // queryRaw is used since polygon is not supported by Prisma
+    const fieldRes = await this.prisma // queryRaw is used since polygon is not supported by Prisma
       .$queryRaw(Prisma.sql`INSERT INTO "Field" (name, product_name, farmer_id, region, familiarity,
             familiarity_desc, latitude, longitude, polygon, latest_satelite_metric,
             category, status, status_date, delay_date, created_date)
@@ -23,6 +24,8 @@ export class FieldsService {
              RETURNING id, name, product_name, farmer_id, region, familiarity,
             familiarity_desc, latitude, longitude, CAST(polygon AS varchar), latest_satelite_metric,
             category, status, status_date, delay_date, created_date;`);
+    await this.createHistoryForField(fieldRes[0]);
+    return fieldRes;
   }
 
   findAll(limit: number, offset: number) {
@@ -41,9 +44,9 @@ export class FieldsService {
              FROM "Field" WHERE "Field".id = ${id};`;
   }
 
-  findByFilter(updateFilter: object) {
+  findByFilter(filter: UpdateFieldDto) {
     // TODO: add the functionality to filter by polygon (currently impossible)
-    return this.prisma.field.findMany({ where: updateFilter });
+    return this.prisma.field.findMany({ where: filter });
   }
 
   async update(id: number, updateFieldDto: UpdateFieldDto) {

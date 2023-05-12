@@ -30,6 +30,7 @@ export class FieldsController {
       return fieldCreated;
     } catch (error) {
       console.error('Error creating field', error);
+      throw error;
     }
   }
 
