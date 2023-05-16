@@ -32,4 +32,8 @@ export class HistoriesService {
   remove(id: number) {
     return this.prisma.history.delete({ where: { id } });
   }
+
+  remove_by_field_id(field_id: number) {
+    return this.prisma.history.deleteMany({ where: { field_id } });
+  }
 }

@@ -56,9 +56,9 @@ export class FieldsController {
 
   @Get(':id')
   @ApiOkResponse({ type: FieldEntity })
-  findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string) {
     try {
-      const fundOneRes = this.fieldsService.findOne(+id);
+      const fundOneRes = await this.fieldsService.findOne(+id);
       console.log('Field found by id', fundOneRes);
       return fundOneRes;
     } catch (error) {
@@ -66,7 +66,7 @@ export class FieldsController {
     }
   }
 
-  @Post('/update')
+  @Post('/filter')
   @ApiOkResponse({ type: FieldEntity })
   findByFilter(@Body() filter: FilterFieldDto) {
     try {

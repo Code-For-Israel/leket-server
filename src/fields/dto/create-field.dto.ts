@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Polygon } from 'geojson';
 import {
   Familiarity,
   FieldCategory,
@@ -32,7 +33,7 @@ export class CreateFieldDto {
   longitude: number;
 
   @ApiProperty()
-  polygon: string;
+  polygon: Polygon;
 
   @ApiProperty({ required: false })
   latest_satelite_metric?: number;

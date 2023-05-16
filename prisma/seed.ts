@@ -1,5 +1,6 @@
 // prisma/seed.ts
 
+import { Polygon } from 'geojson';
 import {
   Familiarity,
   FieldCategory,
@@ -25,7 +26,18 @@ async function main() {
     'talked yesterday',
     123.546,
     234.444,
-    'POLYGON((0 0, 0 10, 10 10, 10 0, 0 0))',
+    {
+      type: 'Polygon',
+      coordinates: [
+        [
+          [0, 0],
+          [0, 10],
+          [10, 10],
+          [10, 0],
+          [0, 0],
+        ],
+      ],
+    },
     0,
     FieldCategory.BUILDING,
     FieldStatus.IRRELEVANT,
@@ -45,7 +57,7 @@ async function create_field(
   familiarity_desc,
   latitude: number,
   longitude: number,
-  polygon: string,
+  polygon: Polygon,
   latest_satelite_metric: number,
   category: FieldCategory,
   status: FieldStatus,
@@ -58,7 +70,7 @@ async function create_field(
             familiarity_desc, latitude, longitude, polygon, latest_satelite_metric,
             category, status, status_date, delay_date, created_date)
              VALUES (${id}, ${name}, CAST(${product_name} AS "Product"), ${farmer_id}, CAST(${region} AS "Region"),
-                     CAST(${familiarity} AS "Familiarity"), ${familiarity_desc}, ${latitude}, ${longitude}, CAST(ST_GeomFromText(${polygon}) AS polygon),
+                     CAST(${familiarity} AS "Familiarity"), ${familiarity_desc}, ${latitude}, ${longitude}, ST_GeomFromGeoJSON(${polygon}),
                      ${latest_satelite_metric}, CAST(${category} AS "FieldCategory"), CAST(${status} AS "FieldStatus"),
                      CAST(${status_date} AS date), CAST(${delay_date} AS date), CAST(${created_date} AS date))
              ON CONFLICT (id) DO NOTHING
