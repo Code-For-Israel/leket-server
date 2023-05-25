@@ -8,7 +8,6 @@ import { Field, Prisma } from '@prisma/client';
 
 @Injectable()
 export class FieldsService {
-  //TODO: prettify raw queries
   constructor(
     private prisma: PrismaService,
     private historiesService: HistoriesService,
@@ -47,9 +46,7 @@ export class FieldsService {
   }
 
   findByFilter(filter: FilterFieldDto) {
-    // TODO: solve the error by prisma
-    const query = this.parseFilterToQuery(filter);
-    return this.prisma.$queryRaw(query);
+    return this.prisma.field.findMany({ where: filter });
   }
 
   async update(id: number, updateFieldDto: UpdateFieldDto) {
@@ -91,17 +88,5 @@ export class FieldsService {
     } catch (e) {
       console.error('Error deleting histories for field id: ' + fieldDto.id);
     }
-  }
-
-  private parseFilterToQuery(filter: FilterFieldDto) {
-    let query = `SELECT id, name, product_name, farmer_id, region, familiarity, familiarity_desc, latitude, longitude, ST_AsGeoJSON(polygon), latest_satelite_metric, category, status, status_date, delay_date, created_date FROM "Field" WHERE`;
-
-    for (const key in filter) {
-      if (filter[key] !== undefined) {
-        query += ` "Field".${key} = "${filter[key]}" AND`;
-      }
-    }
-    query = query.slice(0, -4); // remove the last AND
-    return Prisma.sql`${query}`;
   }
 }
