@@ -26,22 +26,6 @@ export class FieldsService {
     return field;
   }
 
-  // async create1(createFieldDto: CreateFieldDto) {
-  //     const fieldRes = await this.prisma // queryRaw is used since polygon is not supported by Prisma
-  //         .$queryRaw(Prisma.sql`INSERT INTO "Field" (name, product_name, farmer_id, region, familiarity,
-  //         familiarity_desc, latitude, longitude, polygon, latest_satelite_metric,
-  //         category, status, status_date, delay_date, created_date)
-  //          VALUES (${createFieldDto.name}, CAST(${createFieldDto.product_name} AS "Product"), ${createFieldDto.farmer_id}, CAST(${createFieldDto.region} AS "Region"),
-  //                  CAST(${createFieldDto.familiarity} AS "Familiarity"), ${createFieldDto.familiarity_desc}, ${createFieldDto.latitude}, ${createFieldDto.longitude}, ST_GeomFromGeoJSON(${createFieldDto.polygon}),
-  //                  ${createFieldDto.latest_satelite_metric}, CAST(${createFieldDto.category} AS "FieldCategory"), CAST(${createFieldDto.status} AS "FieldStatus"),
-  //                  CAST(${createFieldDto.status_date} AS date), CAST(${createFieldDto.delay_date} AS date), CAST(${createFieldDto.created_date} AS date))
-  //          RETURNING id, name, product_name, farmer_id, region, familiarity,
-  //         familiarity_desc, latitude, longitude, CAST(polygon AS varchar), latest_satelite_metric,
-  //         category, status, status_date, delay_date, created_date;`);
-  //     await this.createHistoryForField(fieldRes[0]);
-  //     return fieldRes;
-  // }
-
   async findAll(filters: any) {
     console.log('fieldsService -> findAll -> Enter');
     console.log(filters);
@@ -98,11 +82,6 @@ export class FieldsService {
 
   findOne(id: number) {
     return this.prisma.field.findUnique({ where: { id } });
-    // return this.prisma
-    //   .$queryRaw`SELECT id, name, product_name, farmer_id, region, familiarity,
-    //         familiarity_desc, latitude, longitude, ST_AsGeoJSON(polygon) AS polygon, latest_satelite_metric,
-    //         category, status, status_date, delay_date, created_date
-    //          FROM "Field" WHERE "Field".id = ${id};`;
   }
 
   findByFilter(filter: FilterFieldDto) {
@@ -110,7 +89,6 @@ export class FieldsService {
   }
 
   async update(id: number, updateFieldDto: UpdateFieldDto) {
-    // updates will not work for polygons
     try {
       const updateFieldRes = await this.prisma.field.update({
         where: { id },
