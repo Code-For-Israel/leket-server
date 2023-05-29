@@ -119,8 +119,14 @@ enum Product {
   ORANGE
 }
 
+model Polygon {
+  Field    Field                   @relation(fields: [field_id], references: [id])
+  field_id Int                     @id
+  polygon  Unsupported("geometry")
+}
+
 model Field {
-  id                     Int                     @id @default(autoincrement())
+  id                     Int              @id @default(autoincrement())
   name                   String
   product_name           Product?
   farmer_id              String?
@@ -134,11 +140,12 @@ model Field {
   status                 FieldStatus
   status_date            DateTime?
   delay_date             DateTime?
-  created_date           DateTime                @default(now())
+  created_date           DateTime         @default(now())
   Missions               Mission[]
   Histories              History[]
   Satellites             Satellite[]
   Attractivenesses       Attractiveness[]
+  Polygon                Polygon?
 
   @@index([category])
   @@index([familiarity])
