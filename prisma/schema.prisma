@@ -30,7 +30,7 @@ enum FieldStatus {
 }
 
 enum Familiarity {
-  NOT_RELEVANT
+  IRRELEVANT
   NOT_KNOWN
   KNOWN_PICKED
   KNOWN_NOT_PICKED
@@ -58,6 +58,7 @@ enum Product {
   GREEN_ONIONS
   ONION
   BROCCOLI
+  GAMBA
   GIVAY
   CARROT
   CHERRY
@@ -125,15 +126,14 @@ model Field {
   farmer_id              String?
   region                 Region
   familiarity            Familiarity
-  familiarity_desc       String
+  familiarity_desc       String?
   latitude               Float
   longitude              Float
-  polygon                Unsupported("geometry")
   latest_satelite_metric Float?
-  category               FieldCategory
+  category               FieldCategory?
   status                 FieldStatus
-  status_date            DateTime
-  delay_date             DateTime
+  status_date            DateTime?
+  delay_date             DateTime?
   created_date           DateTime                @default(now())
   Missions               Mission[]
   Histories              History[]

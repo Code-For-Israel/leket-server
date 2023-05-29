@@ -24,7 +24,7 @@ export class FieldEntity implements Field {
   familiarity: Familiarity;
 
   @ApiProperty()
-  familiarity_desc: string;
+  familiarity_desc: string | null;
 
   @ApiProperty()
   farmer_id: string | null;
@@ -39,22 +39,19 @@ export class FieldEntity implements Field {
   longitude: number;
 
   @ApiProperty()
-  polygon: Polygon;
-
-  @ApiProperty()
   latest_satelite_metric: number;
 
   @ApiProperty()
-  category: FieldCategory;
+  category: FieldCategory | null;
 
   @ApiProperty()
   status: FieldStatus;
 
   @ApiProperty()
-  status_date: Date;
+  status_date: Date | null;
 
   @ApiProperty()
-  delay_date: Date;
+  delay_date: Date | null;
 
   @ApiProperty()
   created_date: Date;

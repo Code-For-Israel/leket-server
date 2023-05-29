@@ -17,6 +17,8 @@ lerna-debug.log*
 # OS
 .DS_Store
 
+*.bat
+
 # Tests
 /coverage
 /.nyc_output
