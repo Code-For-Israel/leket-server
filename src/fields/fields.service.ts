@@ -7,6 +7,7 @@ import { HistoriesService } from "../histories/histories.service";
 import { Field, Prisma } from "@prisma/client";
 import { Point, Polygon } from "geojson";
 import { _ } from "lodash";
+import { FieldStatus } from '@prisma/client';
 
 @Injectable()
 export class FieldsService {
@@ -16,7 +17,6 @@ export class FieldsService {
     private prisma: PrismaService,
     private historiesService: HistoriesService,
   ) {}
-
   async create(createFieldDto: CreateFieldDto) {
     const fieldPolygon = createFieldDto.polygon;
     const fieldPoint = createFieldDto.point;
@@ -28,9 +28,9 @@ export class FieldsService {
       const field = await this.prisma.field.create({
         data: fieldWithoutGeometry,
       });
-      console.log('Field created', field);
+    console.log('Field created', field);
       await this.addGeometryToField(field.id, fieldPolygon, fieldPoint);
-      return field;
+    return field;
     } catch (error) {
       if (error instanceof GeometryCreationFailedError) {
         console.error('Error creating field geometry: ', error);
@@ -105,6 +105,21 @@ export class FieldsService {
     return this.prisma.field.findMany({ where: filter });
   }
 
+  async updateFieldStatus(id: number, status: FieldStatus) {
+    console.log(`fieldsService -> updateFieldStatus -> Enter. id=${id}, status=${status}`);
+    try {
+        await this.prisma.field.update({
+          where: { id },
+          data: {
+              status
+          },
+        });
+        return this.prisma.field.findUnique({ where: { id } });
+    } catch (error) {
+      console.log('Error updating Field status', error);
+    }
+  }
+
   async update(id: number, updateFieldDto: UpdateFieldDto) {
     try {
       const updateFieldRes = await this.prisma.field.update({
@@ -152,15 +167,15 @@ export class FieldsService {
     fieldPoint: Point,
   ) {
     try {
-      await this.prisma.$queryRaw(
+    await this.prisma.$queryRaw(
         Prisma.sql`INSERT INTO "Geometry" (field_id, polygon, point) VALUES (${field_id}, ST_GeomFromGeoJSON(${fieldPolygon}), ST_GeomFromGeoJSON(${fieldPoint}));`,
       );
     } catch (e) {
       throw new GeometryCreationFailedError(
         'Error creating geometry for field',
-      );
-    }
+    );
   }
+}
 
   private async getGeometryForField(field_id: number) {
     try {
