@@ -9,4 +9,4 @@ COPY . .
 
 EXPOSE 3000
 
-CMD npx prisma migrate dev --skip-generate; npm start
+CMD npx prisma migrate dev; npm start
