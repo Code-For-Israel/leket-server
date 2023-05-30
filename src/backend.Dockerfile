@@ -13,4 +13,4 @@ RUN npx prisma generate
 
 EXPOSE 3000
 
-CMD npx prisma migrate dev --name 'init'; npm start
+CMD npx prisma migrate dev --skip-generate; npm start
