@@ -1,12 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { CreateFieldDto } from './dto/create-field.dto';
-import { UpdateFieldDto } from './dto/update-field.dto';
-import { FilterFieldDto } from './dto/filter-field.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { HistoriesService } from '../histories/histories.service';
-import { Field, Prisma } from '@prisma/client';
-import { Polygon, Point } from 'geojson';
-import { _ } from 'lodash';
+import { Injectable } from "@nestjs/common";
+import { CreateFieldDto } from "./dto/create-field.dto";
+import { UpdateFieldDto } from "./dto/update-field.dto";
+import { FilterFieldDto } from "./dto/filter-field.dto";
+import { PrismaService } from "src/prisma/prisma.service";
+import { HistoriesService } from "../histories/histories.service";
+import { Field, Prisma } from "@prisma/client";
+import { Point, Polygon } from "geojson";
+import { _ } from "lodash";
 
 @Injectable()
 export class FieldsService {
@@ -95,8 +95,10 @@ export class FieldsService {
     return { fields, fieldCount };
   }
 
-  findOne(id: number) {
-    return this.prisma.field.findUnique({ where: { id } });
+  async findOne(id: number) {
+    const field = await this.prisma.field.findUnique({ where: { id } });
+    const fieldGeometry = await this.getGeometryForField(id);
+    return _.assign({}, field, fieldGeometry);
   }
 
   findByFilter(filter: FilterFieldDto) {
@@ -157,6 +159,20 @@ export class FieldsService {
       throw new GeometryCreationFailedError(
         'Error creating geometry for field',
       );
+    }
+  }
+
+  private async getGeometryForField(field_id: number) {
+    try {
+      const fieldGeometryRes: any[] = await this.prisma.$queryRaw(
+        Prisma.sql`SELECT ST_AsGeoJSON(polygon) as polygon, ST_AsGeoJSON(point) as point FROM "Geometry" WHERE field_id = ${field_id};`,
+      );
+      if (fieldGeometryRes.length === 0) {
+        throw new Error('No geometry found for field id: ' + field_id);
+      }
+      return fieldGeometryRes[0];
+    } catch (e) {
+      throw e;
     }
   }
 }
