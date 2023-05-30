@@ -11,21 +11,21 @@ import {
   Region,
 } from '@prisma/client';
 import { CreateFieldDto } from '../src/fields/dto/create-field.dto';
-import { FieldsService } from '../src/fields/fields.service';
 
 // initialize Prisma Client
 const prisma = new PrismaClient();
 
-const getField = (index, product, familiarity, status): CreateFieldDto => {
+const getField = (index): CreateFieldDto => {
   return {
     name: `שדה ${index}`,
-    product_name: product,
+    product_name: chooseRandomlyFromEnum(Product),
     region: chooseRandomlyFromEnum(Region),
     farmer_id: Math.round(Math.random() * 100000).toString(),
-    familiarity: familiarity,
+    familiarity: chooseRandomlyFromEnum(Familiarity),
     latitude: Math.round(Math.random() * 100000),
     longitude: Math.round(Math.random() * 100000),
-    status: status,
+    category: chooseRandomlyFromEnum(FieldCategory),
+    status: chooseRandomlyFromEnum(FieldStatus),
   } as CreateFieldDto;
 };
 
@@ -48,6 +48,13 @@ function createRandomPolygon() {
   };
 }
 
+function createRandomPoint() {
+  return {
+    type: 'Point',
+    coordinates: [getRandomFloat(1, 100), getRandomFloat(1, 100)],
+  };
+}
+
 function chooseRandomlyFromEnum(myEnum) {
   const keys = Object.keys(myEnum);
   return myEnum[keys[(keys.length * Math.random()) << 0]];
@@ -56,18 +63,14 @@ function chooseRandomlyFromEnum(myEnum) {
 async function main() {
   let polygon;
   for (let i = 0; i < 10; i++) {
-    const field = await prisma.field.create({
-      data: getField(
-        i,
-        chooseRandomlyFromEnum(Product),
-        chooseRandomlyFromEnum(Familiarity),
-        chooseRandomlyFromEnum(FieldStatus),
-      ),
-    });
-    console.log(field);
+    const field = await prisma.field.create({ data: getField(i) });
     polygon = createRandomPolygon();
     await prisma.$queryRaw(
-      Prisma.sql`INSERT INTO "Polygon" (field_id, polygon) VALUES (${field.id}, ST_GeomFromGeoJSON(${polygon}));`,
+      Prisma.sql`INSERT INTO "Geometry" (field_id, polygon) VALUES (${field.id}, ST_GeomFromGeoJSON(${polygon}));`,
+    );
+    const point = createRandomPoint();
+    await prisma.$queryRaw(
+      Prisma.sql`UPDATE "Geometry" SET point = ST_GeomFromGeoJSON(${point}) WHERE field_id = ${field.id};`,
     );
   }
 }

@@ -7,7 +7,6 @@ import {
   Patch,
   Param,
   Delete,
-  Query,
 } from '@nestjs/common';
 import { FieldsService } from './fields.service';
 import { CreateFieldDto } from './dto/create-field.dto';
@@ -24,14 +23,7 @@ export class FieldsController {
   @Post()
   @ApiCreatedResponse({ type: FieldEntity })
   async create(@Body() createFieldDto: CreateFieldDto) {
-    try {
-      const fieldCreated = await this.fieldsService.create(createFieldDto);
-      console.log('Field created', fieldCreated);
-      return fieldCreated;
-    } catch (error) {
-      console.error('Error creating field', error);
-      throw error;
-    }
+    return this.fieldsService.create(createFieldDto);
   }
 
   // @Get()

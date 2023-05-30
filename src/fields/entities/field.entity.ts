@@ -1,5 +1,4 @@
 // meant for swagger response types
-import { Polygon } from 'geojson';
 import {
   Familiarity,
   Field,
@@ -37,6 +36,9 @@ export class FieldEntity implements Field {
 
   @ApiProperty()
   longitude: number;
+
+  @ApiProperty()
+  sentinel_id: string;
 
   @ApiProperty()
   latest_satelite_metric: number;

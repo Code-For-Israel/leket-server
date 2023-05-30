@@ -5,25 +5,40 @@ import { FilterFieldDto } from './dto/filter-field.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { HistoriesService } from '../histories/histories.service';
 import { Field, Prisma } from '@prisma/client';
-import { Polygon } from 'geojson';
+import { Polygon, Point } from 'geojson';
 import { _ } from 'lodash';
 
 @Injectable()
 export class FieldsService {
+  private readonly polygon = 'polygon';
+  private readonly point = 'point';
   constructor(
     private prisma: PrismaService,
     private historiesService: HistoriesService,
   ) {}
+
   async create(createFieldDto: CreateFieldDto) {
-    const polygon = createFieldDto.polygon;
-    const fieldWithoutPolygon = _.omit(createFieldDto, 'polygon');
-    const field = await this.prisma.field.create({ data: fieldWithoutPolygon });
-    console.log('Field created', field);
-    if (polygon) {
-      await this.addPolygonToField(field.id, polygon);
-      console.log('Polygon added to field', field.id);
+    const fieldPolygon = createFieldDto.polygon;
+    const fieldPoint = createFieldDto.point;
+    const fieldWithoutGeometry = _.omit(createFieldDto, [
+      this.polygon,
+      this.point,
+    ]);
+    try {
+      const field = await this.prisma.field.create({
+        data: fieldWithoutGeometry,
+      });
+      console.log('Field created', field);
+      await this.addGeometryToField(field.id, fieldPolygon, fieldPoint);
+      return field;
+    } catch (error) {
+      if (error instanceof GeometryCreationFailedError) {
+        console.error('Error creating field geometry: ', error);
+      } else {
+        console.error('Error creating field', error);
+      }
+      throw error;
     }
-    return field;
   }
 
   async findAll(filters: any) {
@@ -129,9 +144,26 @@ export class FieldsService {
     }
   }
 
-  private async addPolygonToField(field_id: number, polygon: Polygon) {
-    await this.prisma.$queryRaw(
-      Prisma.sql`INSERT INTO "Polygon" (field_id, polygon) VALUES (${field_id}, ST_GeomFromGeoJSON(${polygon}));`,
-    );
+  private async addGeometryToField(
+    field_id: number,
+    fieldPolygon: Polygon,
+    fieldPoint: Point,
+  ) {
+    try {
+      await this.prisma.$queryRaw(
+        Prisma.sql`INSERT INTO "Geometry" (field_id, polygon, point) VALUES (${field_id}, ST_GeomFromGeoJSON(${fieldPolygon}), ST_GeomFromGeoJSON(${fieldPoint}));`,
+      );
+    } catch (e) {
+      throw new GeometryCreationFailedError(
+        'Error creating geometry for field',
+      );
+    }
+  }
+}
+
+class GeometryCreationFailedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'GeometryCreationFailed';
   }
 }

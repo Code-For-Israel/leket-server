@@ -119,10 +119,11 @@ enum Product {
   ORANGE
 }
 
-model Polygon {
-  Field    Field                   @relation(fields: [field_id], references: [id])
-  field_id Int                     @id
-  polygon  Unsupported("geometry")
+model Geometry {
+  Field    Field                    @relation(fields: [field_id], references: [id])
+  field_id Int                      @id
+  polygon  Unsupported("geometry")?
+  point    Unsupported("geometry")?
 }
 
 model Field {
@@ -135,6 +136,7 @@ model Field {
   familiarity_desc       String?
   latitude               Float
   longitude              Float
+  sentinel_id            String?
   latest_satelite_metric Float?
   category               FieldCategory?
   status                 FieldStatus
@@ -145,7 +147,7 @@ model Field {
   Histories              History[]
   Satellites             Satellite[]
   Attractivenesses       Attractiveness[]
-  Polygon                Polygon?
+  Geometry               Geometry?
 
   @@index([category])
   @@index([familiarity])
