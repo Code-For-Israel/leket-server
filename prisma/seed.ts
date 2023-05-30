@@ -65,12 +65,9 @@ async function main() {
   for (let i = 0; i < 10; i++) {
     const field = await prisma.field.create({ data: getField(i) });
     polygon = createRandomPolygon();
-    await prisma.$queryRaw(
-      Prisma.sql`INSERT INTO "Geometry" (field_id, polygon) VALUES (${field.id}, ST_GeomFromGeoJSON(${polygon}));`,
-    );
     const point = createRandomPoint();
     await prisma.$queryRaw(
-      Prisma.sql`UPDATE "Geometry" SET point = ST_GeomFromGeoJSON(${point}) WHERE field_id = ${field.id};`,
+      Prisma.sql`INSERT INTO "Geometry" (field_id, polygon, point) VALUES (${field.id}, ST_GeomFromGeoJSON(${polygon}), ST_GeomFromGeoJSON(${point}));`,
     );
   }
 }
