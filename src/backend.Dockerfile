@@ -7,6 +7,9 @@ RUN npm install
 RUN apk add --update --no-cache openssl1.1-compat
 COPY . .
 
+# Prisma configuration
+RUN npx prisma generate
+
 EXPOSE 3000
 
-CMD npx prisma migrate dev; npm start
+CMD npm start
