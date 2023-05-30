@@ -14,6 +14,7 @@ import { UpdateFieldDto } from './dto/update-field.dto';
 import { FilterFieldDto } from './dto/filter-field.dto';
 import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { FieldEntity } from './entities/field.entity';
+import { FieldStatus } from '@prisma/client';
 
 @Controller('fields')
 @ApiTags('Fields')
@@ -87,6 +88,12 @@ export class FieldsController {
     } catch (error) {
       console.log('Error finding field by filter', error);
     }
+  }
+
+  @Post('/update/status/:id')
+  @ApiOkResponse({ type: FieldEntity })
+  async updateFieldStatus(@Param('id') id: string, @Body() body: any) {
+      return await this.fieldsService.updateFieldStatus(parseInt(id, 10), FieldStatus[body.status]);
   }
 
   @Patch(':id')
