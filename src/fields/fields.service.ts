@@ -1,13 +1,14 @@
-import { Injectable } from "@nestjs/common";
-import { CreateFieldDto } from "./dto/create-field.dto";
-import { UpdateFieldDto } from "./dto/update-field.dto";
-import { FilterFieldDto } from "./dto/filter-field.dto";
-import { PrismaService } from "src/prisma/prisma.service";
-import { HistoriesService } from "../histories/histories.service";
-import { Field, Prisma } from "@prisma/client";
-import { Point, Polygon } from "geojson";
-import { _ } from "lodash";
+import { Injectable } from '@nestjs/common';
+import { CreateFieldDto } from './dto/create-field.dto';
+import { UpdateFieldDto } from './dto/update-field.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { HistoriesService } from '../histories/histories.service';
+import { Field, Prisma } from '@prisma/client';
+import { Point, Polygon } from 'geojson';
+import { _ } from 'lodash';
 import { FieldStatus } from '@prisma/client';
+import { fieldIdsIntersectionsPrisma } from './field-types';
+import { FilterFieldDto } from './dto/filter-field.dto';
 
 @Injectable()
 export class FieldsService {
@@ -28,9 +29,9 @@ export class FieldsService {
       const field = await this.prisma.field.create({
         data: fieldWithoutGeometry,
       });
-    console.log('Field created', field);
+      console.log('Field created', field);
       await this.addGeometryToField(field.id, fieldPolygon, fieldPoint);
-    return field;
+      return field;
     } catch (error) {
       if (error instanceof GeometryCreationFailedError) {
         console.error('Error creating field geometry: ', error);
@@ -41,12 +42,11 @@ export class FieldsService {
     }
   }
 
-  async findAll(filters: any) {
+  async findAll(filters: FilterFieldDto) {
     console.log('fieldsService -> findAll -> Enter');
     console.log(filters);
     const {
       name,
-      status,
       products,
       regions,
       careStatuses,
@@ -54,41 +54,33 @@ export class FieldsService {
       sortDir,
       page,
       pageSize,
+      polygonFilter,
     } = filters;
+
+    const intersectedFields: number[] = await this.findIntersectedFields(
+      polygonFilter,
+    );
+
+    const where = await this.createWhereClause(
+      intersectedFields,
+      name,
+      products,
+      regions,
+      careStatuses,
+    );
 
     const skip = page * pageSize;
     const take = pageSize;
 
-    const where = {
-      name: name ?? undefined,
-      product_name:
-        products && products.length > 0
-          ? {
-              in: products,
-            }
-          : undefined,
-      region:
-        regions && regions.length > 0
-          ? {
-              in: regions,
-            }
-          : undefined,
-      status:
-        careStatuses && careStatuses.length > 0
-          ? {
-              in: careStatuses,
-            }
-          : undefined,
-    };
-
-    const fields = await this.prisma.field.findMany({
-      where,
-      orderBy: sortBy ? { [sortBy]: sortDir ?? 'asc' } : undefined,
-      skip,
-      take,
-    });
-
-    const fieldCount = await this.prisma.field.count({ where });
+    const [fields, fieldCount] = await Promise.all([
+      this.prisma.field.findMany({
+        where,
+        orderBy: sortBy ? { [sortBy]: sortDir ?? 'asc' } : undefined,
+        skip,
+        take,
+      }),
+      this.prisma.field.count({ where }),
+    ]);
 
     console.log(`fieldsService -> findAll -> found ${fields.length} fields`);
 
@@ -101,20 +93,23 @@ export class FieldsService {
     return _.assign({}, field, fieldGeometry);
   }
 
-  findByFilter(filter: FilterFieldDto) {
+  findByFilter(filter: any) {
+    // TODO: add filter validation
     return this.prisma.field.findMany({ where: filter });
   }
 
   async updateFieldStatus(id: number, status: FieldStatus) {
-    console.log(`fieldsService -> updateFieldStatus -> Enter. id=${id}, status=${status}`);
+    console.log(
+      `fieldsService -> updateFieldStatus -> Enter. id=${id}, status=${status}`,
+    );
     try {
-        await this.prisma.field.update({
-          where: { id },
-          data: {
-              status
-          },
-        });
-        return this.prisma.field.findUnique({ where: { id } });
+      await this.prisma.field.update({
+        where: { id },
+        data: {
+          status,
+        },
+      });
+      return this.prisma.field.findUnique({ where: { id } });
     } catch (error) {
       console.log('Error updating Field status', error);
     }
@@ -138,6 +133,38 @@ export class FieldsService {
     const removeFieldRes = await this.prisma.field.delete({ where: { id } });
     await this.deleteHistoriesForField(removeFieldRes);
     return 'ok';
+  }
+
+  private async createWhereClause(
+    fieldIds,
+    name,
+    products,
+    regions,
+    careStatuses,
+  ) {
+    return {
+      id: fieldIds ? { in: fieldIds } : undefined,
+      name: name ?? undefined,
+      product_name:
+        products && products.length > 0 ? { in: products } : undefined,
+      region: regions && regions.length > 0 ? { in: regions } : undefined,
+      status:
+        careStatuses && careStatuses.length > 0
+          ? { in: careStatuses }
+          : undefined,
+    };
+  }
+
+  private async findIntersectedFields(
+    polygonFilter: Polygon,
+  ): Promise<number[]> {
+    if (polygonFilter) {
+      const intersectedFields: fieldIdsIntersectionsPrisma[] =
+        await this.prisma.$queryRaw(
+          Prisma.sql`SELECT field_id FROM "Geometry" WHERE ST_Intersects(ST_GeomFromGeoJSON(${polygonFilter}), "Geometry".polygon);`,
+        );
+      return intersectedFields.map((field) => field.field_id);
+    }
   }
 
   private async createHistoryForField(fieldDto: Field) {
@@ -167,15 +194,15 @@ export class FieldsService {
     fieldPoint: Point,
   ) {
     try {
-    await this.prisma.$queryRaw(
+      await this.prisma.$queryRaw(
         Prisma.sql`INSERT INTO "Geometry" (field_id, polygon, point) VALUES (${field_id}, ST_GeomFromGeoJSON(${fieldPolygon}), ST_GeomFromGeoJSON(${fieldPoint}));`,
       );
     } catch (e) {
       throw new GeometryCreationFailedError(
         'Error creating geometry for field',
-    );
+      );
+    }
   }
-}
 
   private async getGeometryForField(field_id: number) {
     try {

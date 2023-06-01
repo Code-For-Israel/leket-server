@@ -54,18 +54,9 @@ export class FieldsController {
     'Origin, X-Requested-With, Content-Type, Accept',
   )
   @ApiOkResponse({ type: FieldEntity, isArray: true })
-  async findAll(@Body() filters: object) {
-    // async findAll(
-    //     @Query('filters') filters: object,
-    //     @Query('page') page: number,
-    //     @Query('pageSize') pageSize: number,
-    // ) {
-    try {
-      const { fields, fieldCount } = await this.fieldsService.findAll(filters);
-      return { fields, fieldCount };
-    } catch (error) {
-      console.error('Error finding all fields', error);
-    }
+  async findAll(@Body() filters: FilterFieldDto) {
+    const { fields, fieldCount } = await this.fieldsService.findAll(filters);
+    return { fields, fieldCount };
   }
 
   @Get(':id')
@@ -93,7 +84,10 @@ export class FieldsController {
   @Post('/update/status/:id')
   @ApiOkResponse({ type: FieldEntity })
   async updateFieldStatus(@Param('id') id: string, @Body() body: any) {
-      return await this.fieldsService.updateFieldStatus(parseInt(id, 10), FieldStatus[body.status]);
+    return await this.fieldsService.updateFieldStatus(
+      parseInt(id, 10),
+      FieldStatus[body.status],
+    );
   }
 
   @Patch(':id')

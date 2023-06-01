@@ -1,6 +1,5 @@
-// prisma/seed.ts
+// npx prisma db seed
 
-import { Polygon } from 'geojson';
 import {
   Familiarity,
   FieldCategory,
@@ -11,6 +10,11 @@ import {
   Region,
 } from '@prisma/client';
 import { CreateFieldDto } from '../src/fields/dto/create-field.dto';
+
+const fs = require('fs');
+const csv = require('csv-parser');
+
+import { polygons } from './mock-data-seed';
 
 // initialize Prisma Client
 const prisma = new PrismaClient();
@@ -60,9 +64,26 @@ function chooseRandomlyFromEnum(myEnum) {
   return myEnum[keys[(keys.length * Math.random()) << 0]];
 }
 
-async function main() {
+function readDataFromCsv() {
+  const results = [];
+
+  fs.createReadStream('data/check.csv')
+    .pipe(csv())
+    .on('data', (data) => {
+      console.log(data);
+      results.push(data);
+    })
+    .on('end', () => {
+      // console.log('CSV file successfully read. Data:', results);
+    })
+    .on('error', (error) => {
+      console.error('Error reading CSV file:', error);
+    });
+}
+
+async function insertRandomFields(numOfFields: number) {
   let polygon;
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < numOfFields; i++) {
     const field = await prisma.field.create({ data: getField(i) });
     polygon = createRandomPolygon();
     const point = createRandomPoint();
@@ -70,6 +91,23 @@ async function main() {
       Prisma.sql`INSERT INTO "Geometry" (field_id, polygon, point) VALUES (${field.id}, ST_GeomFromGeoJSON(${polygon}), ST_GeomFromGeoJSON(${point}));`,
     );
   }
+}
+
+async function insert5FieldsRealPolygons() {
+  let polygon;
+  for (let i = 0; i < 5; i++) {
+    const field = await prisma.field.create({ data: getField(i) });
+    polygon = polygons[i];
+    const point = createRandomPoint();
+    await prisma.$queryRaw(
+      Prisma.sql`INSERT INTO "Geometry" (field_id, polygon, point) VALUES (${field.id}, ST_GeomFromGeoJSON(${polygon}), ST_GeomFromGeoJSON(${point}));`,
+    );
+  }
+}
+
+async function main() {
+  // await insertRandomFields(10);
+  await insert5FieldsRealPolygons();
 }
 
 // execute the main function
