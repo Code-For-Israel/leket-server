@@ -55,7 +55,9 @@ export class FieldsController {
   )
   @ApiOkResponse({ type: FieldEntity, isArray: true })
   async findAll(@Body() filters: FilterFieldDto) {
-    const { fieldsWithGeo, fieldCount } = await this.fieldsService.findAll(filters);
+    const { fieldsWithGeo, fieldCount } = await this.fieldsService.findAll(
+      filters,
+    );
     return { fields: fieldsWithGeo, fieldCount };
   }
 

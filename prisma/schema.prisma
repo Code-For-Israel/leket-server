@@ -124,33 +124,32 @@ model Geometry {
 }
 
 model Field {
-  id                     Int              @id @default(autoincrement())
-  name                   String
-  product_name           Product?
-  farmer_id              String?
-  region                 Region
-  familiarity            Familiarity
-  familiarity_desc       String?
-  latitude               Float
-  longitude              Float
-  sentinel_id            String?
-  latest_satelite_metric Float?
-  category               FieldCategory?
-  status                 FieldStatus
-  status_date            DateTime?
-  delay_date             DateTime?
-  created_date           DateTime         @default(now())
-  Missions               Mission[]
-  Histories              History[]
-  Satellites             Satellite[]
-  Attractivenesses       Attractiveness[]
-  Geometry               Geometry?
+  id                           Int              @id @default(autoincrement())
+  name                         String
+  product_name                 Product?
+  farmer_id                    String?
+  region                       Region
+  familiarity                  Familiarity
+  familiarity_desc             String?
+  latitude                     Float
+  longitude                    Float
+  sentinel_id                  String?
+  latest_satelite_metric       Float?
+  latest_attractiveness_metric Float?
+  category                     FieldCategory?
+  status                       FieldStatus
+  status_date                  DateTime?
+  delay_date                   DateTime?
+  created_date                 DateTime         @default(now())
+  Missions                     Mission[]
+  Histories                    History[]
+  Satellites                   Satellite[]
+  Attractivenesses             Attractiveness[]
+  Geometry                     Geometry?
 
-  @@index([category])
-  @@index([familiarity])
-  @@index([region])
-  @@index([status])
-  @@index([product_name, region, status])
+  @@index(fields: [name], type: Hash)
+  @@index(fields: [latest_satelite_metric, latest_attractiveness_metric], type: BTree)
+  @@index(fields: [latest_attractiveness_metric, latest_satelite_metric], type: BTree)
 }
 
 model Satellite {
@@ -161,7 +160,7 @@ model Satellite {
   statistics Json
   like       Boolean
 
-  @@index([field_id])
+  @@index(fields: [field_id], type: Hash)
 }
 
 model Attractiveness {
@@ -174,8 +173,6 @@ model Attractiveness {
   satellite_score Float
   average_score   Float
   like            Boolean
-
-  @@index([field_id, date])
 }
 
 model Market {
@@ -198,8 +195,7 @@ model Mission {
   was_picked      Boolean
   not_picked_desc String
 
-  @@index([field_id, product_name])
-  @@index([product_name])
+  @@index([field_id], type: Hash)
 }
 
 model History {
@@ -210,5 +206,5 @@ model History {
   product_name Product
   farmer_id    String
 
-  @@index([field_id, product_name])
+  @@index([field_id], type: Hash)
 }

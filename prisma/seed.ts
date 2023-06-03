@@ -26,7 +26,8 @@ const getField = (index): CreateFieldDto => {
     region: chooseRandomlyFromEnum(Region),
     farmer_id: Math.round(Math.random() * 100000).toString(),
     familiarity: chooseRandomlyFromEnum(Familiarity),
-    latest_satelite_metric: Math.round(Math.random()*100)/100,
+    latest_satelite_metric: Math.round(Math.random() * 100) / 100,
+    latest_attractiveness_metric: Math.round(Math.random() * 100) / 100,
     latitude: Math.round(Math.random() * 100000),
     longitude: Math.round(Math.random() * 100000),
     category: chooseRandomlyFromEnum(FieldCategory),
@@ -66,18 +67,18 @@ function chooseRandomlyFromEnum(myEnum) {
 }
 
 async function readDataFromCsv(): Promise<string[]> {
-    const results = [];
-    return new Promise((resolve, reject) => {
-        fs.createReadStream('data/check.csv')
-            .pipe(csv())
-            .on('data', (data: any) => {
-                data.plot = data.plot.replace(/\(/g, '[').replace(/\)/g, ']');
-                data.plot = `{"coordinates": [${data.plot}], "type": "Polygon"}`;
-                results.push(data.plot);
-            })
-            .on('end', () => resolve(results))
-            .on('error', (error: any) => reject(error));
-    });
+  const results = [];
+  return new Promise((resolve, reject) => {
+    fs.createReadStream('data/check.csv')
+      .pipe(csv())
+      .on('data', (data: any) => {
+        data.plot = data.plot.replace(/\(/g, '[').replace(/\)/g, ']');
+        data.plot = `{"coordinates": [${data.plot}], "type": "Polygon"}`;
+        results.push(data.plot);
+      })
+      .on('end', () => resolve(results))
+      .on('error', (error: any) => reject(error));
+  });
 
   /*const results = [];
 console.log("enter");
@@ -100,21 +101,23 @@ console.log("enter");
 }
 
 function getPolygonCenter(polygon: number[][]) {
-    const centerX = polygon.reduce((sum, point) => sum + point[0], 0) / polygon.length;
-    const centerY = polygon.reduce((sum, point) => sum + point[1], 0) / polygon.length;
+  const centerX =
+    polygon.reduce((sum, point) => sum + point[0], 0) / polygon.length;
+  const centerY =
+    polygon.reduce((sum, point) => sum + point[1], 0) / polygon.length;
 
-    return {
-        type: 'Point',
-        coordinates: [centerX, centerY],
-    };
+  return {
+    type: 'Point',
+    coordinates: [centerX, centerY],
+  };
 }
 
 async function insertRandomFields(polygons: any[]) {
   let polygon;
   let point;
-  for (let i = 0; i < polygons.length ; i++) {
+  for (let i = 0; i < polygons.length; i++) {
     const field = await prisma.field.create({ data: getField(i) });
-    
+
     polygon = JSON.parse(polygons[i]);
     point = getPolygonCenter(polygon.coordinates[0]);
     // point = createRandomPoint();
@@ -138,9 +141,9 @@ async function insert5FieldsRealPolygons() {
 }
 
 async function main() {
-    const polygons = await readDataFromCsv();
+  const polygons = await readDataFromCsv();
   await insertRandomFields(polygons);
-    // await insert5FieldsRealPolygons();
+  // await insert5FieldsRealPolygons();
 }
 
 // execute the main function

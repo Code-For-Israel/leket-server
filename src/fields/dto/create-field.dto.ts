@@ -41,6 +41,9 @@ export class CreateFieldDto {
   @ApiProperty({ required: false })
   latest_satelite_metric?: number;
 
+  @ApiProperty({ required: false })
+  latest_attractiveness_metric?: number;
+
   @ApiProperty()
   category: FieldCategory;
 
