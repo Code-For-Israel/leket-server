@@ -55,17 +55,17 @@ export class FieldsController {
   )
   @ApiOkResponse({ type: FieldEntity, isArray: true })
   async findAll(@Body() filters: FilterFieldDto) {
-    const { fields, fieldCount } = await this.fieldsService.findAll(filters);
-    return { fields, fieldCount };
+    const { fieldsWithGeo, fieldCount } = await this.fieldsService.findAll(filters);
+    return { fields: fieldsWithGeo, fieldCount };
   }
 
   @Get(':id')
   @ApiOkResponse({ type: FieldEntity })
   async findOne(@Param('id') id: string) {
     try {
-      const fundOneRes = await this.fieldsService.findOne(+id);
-      console.log('Field found by id', fundOneRes);
-      return fundOneRes;
+      const findOneRes = await this.fieldsService.findOne(+id);
+      console.log('Field found by id', findOneRes);
+      return findOneRes;
     } catch (error) {
       console.error('Error finding field by id', error);
     }
