@@ -11,6 +11,7 @@ export class FilterFieldDto extends PartialType(CreateFieldDto) {
   sortDir: string;
   page: number;
   pageSize: number;
+  optionMoreFilters: object;
 
   @ApiProperty()
   polygonFilter: Polygon;

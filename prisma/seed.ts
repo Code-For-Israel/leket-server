@@ -20,6 +20,9 @@ import { polygons } from './mock-data-seed';
 const prisma = new PrismaClient();
 
 const getField = (index): CreateFieldDto => {
+  const currentDate = new Date();
+  currentDate.setDate(currentDate.getDate() - Math.round(Math.random() * 100));
+
   return {
     name: `שדה ${index}`,
     product_name: chooseRandomlyFromEnum(Product),
@@ -32,6 +35,8 @@ const getField = (index): CreateFieldDto => {
     longitude: Math.round(Math.random() * 100000),
     category: chooseRandomlyFromEnum(FieldCategory),
     status: chooseRandomlyFromEnum(FieldStatus),
+    created_date: currentDate,
+    status_date: currentDate,
   } as CreateFieldDto;
 };
 

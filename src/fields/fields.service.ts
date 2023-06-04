@@ -44,7 +44,6 @@ export class FieldsService {
 
     async findAll(filters: FilterFieldDto): Promise<any> {
         console.log('fieldsService -> findAll -> Enter');
-        console.log(filters);
         const {
             name,
             products,
@@ -55,6 +54,7 @@ export class FieldsService {
             page,
             pageSize,
             polygonFilter,
+            optionMoreFilters
         } = filters;
 
         const intersectedFields: number[] = await this.findIntersectedFields(
@@ -67,6 +67,7 @@ export class FieldsService {
             products,
             regions,
             careStatuses,
+            optionMoreFilters
         );
 
         const skip = page * pageSize;
@@ -116,6 +117,8 @@ export class FieldsService {
                 where: { id },
                 data: {
                     status,
+                    status_date: new Date(),
+                    delay_date: status === FieldStatus.ON_HOLD ? new Date() : null
                 },
             });
             return this.prisma.field.findUnique({ where: { id } });
@@ -150,6 +153,7 @@ export class FieldsService {
         products,
         regions,
         careStatuses,
+        optionMoreFilters
     ) {
         return {
             id: fieldIds ? { in: fieldIds } : undefined,
@@ -157,6 +161,18 @@ export class FieldsService {
             product_name:
                 products && products.length > 0 ? { in: products } : undefined,
             region: regions && regions.length > 0 ? { in: regions } : undefined,
+            latest_attractiveness_metric: {
+                gte: optionMoreFilters.attractionFrom,
+                lte: optionMoreFilters.attractionTo
+            },
+            latest_satelite_metric: {
+                gte: optionMoreFilters.ndviFrom,
+                lte: optionMoreFilters.ndviTo
+            },
+            status_date: {
+                gte: optionMoreFilters.dateFrom || undefined,
+                lte: optionMoreFilters.dateTo || undefined,
+            },
             status:
                 careStatuses && careStatuses.length > 0
                     ? { in: careStatuses }

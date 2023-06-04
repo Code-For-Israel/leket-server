@@ -38,6 +38,7 @@ CREATE TABLE "Field" (
     "longitude" DOUBLE PRECISION NOT NULL,
     "sentinel_id" TEXT,
     "latest_satelite_metric" DOUBLE PRECISION,
+    "latest_attractiveness_metric" DOUBLE PRECISION,
     "category" "FieldCategory",
     "status" "FieldStatus" NOT NULL,
     "status_date" TIMESTAMP(3),
@@ -108,37 +109,25 @@ CREATE TABLE "History" (
 );
 
 -- CreateIndex
-CREATE INDEX "Field_category_idx" ON "Field"("category");
+CREATE INDEX "Field_name_idx" ON "Field" USING HASH ("name");
 
 -- CreateIndex
-CREATE INDEX "Field_familiarity_idx" ON "Field"("familiarity");
+CREATE INDEX "Field_latest_satelite_metric_latest_attractiveness_metric_idx" ON "Field"("latest_satelite_metric", "latest_attractiveness_metric");
 
 -- CreateIndex
-CREATE INDEX "Field_region_idx" ON "Field"("region");
+CREATE INDEX "Field_latest_attractiveness_metric_latest_satelite_metric_idx" ON "Field"("latest_attractiveness_metric", "latest_satelite_metric");
 
 -- CreateIndex
-CREATE INDEX "Field_status_idx" ON "Field"("status");
-
--- CreateIndex
-CREATE INDEX "Field_product_name_region_status_idx" ON "Field"("product_name", "region", "status");
-
--- CreateIndex
-CREATE INDEX "Satellite_field_id_idx" ON "Satellite"("field_id");
-
--- CreateIndex
-CREATE INDEX "Attractiveness_field_id_date_idx" ON "Attractiveness"("field_id", "date");
+CREATE INDEX "Satellite_field_id_idx" ON "Satellite" USING HASH ("field_id");
 
 -- CreateIndex
 CREATE INDEX "Market_product_name_idx" ON "Market"("product_name");
 
 -- CreateIndex
-CREATE INDEX "Mission_field_id_product_name_idx" ON "Mission"("field_id", "product_name");
+CREATE INDEX "Mission_field_id_idx" ON "Mission" USING HASH ("field_id");
 
 -- CreateIndex
-CREATE INDEX "Mission_product_name_idx" ON "Mission"("product_name");
-
--- CreateIndex
-CREATE INDEX "History_field_id_product_name_idx" ON "History"("field_id", "product_name");
+CREATE INDEX "History_field_id_idx" ON "History" USING HASH ("field_id");
 
 -- AddForeignKey
 ALTER TABLE "Geometry" ADD CONSTRAINT "Geometry_field_id_fkey" FOREIGN KEY ("field_id") REFERENCES "Field"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
