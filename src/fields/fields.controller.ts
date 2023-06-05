@@ -7,7 +7,9 @@ import {
   Patch,
   Param,
   Delete,
-} from '@nestjs/common';
+  ValidationPipe,
+  UsePipes
+} from "@nestjs/common";
 import { FieldsService } from './fields.service';
 import { CreateFieldDto } from './dto/create-field.dto';
 import { UpdateFieldDto } from './dto/update-field.dto';
@@ -27,26 +29,6 @@ export class FieldsController {
     return this.fieldsService.create(createFieldDto);
   }
 
-  // @Get()
-  // @Header('Access-Control-Allow-Origin', '*')
-  // @Header(
-  //     'Access-Control-Allow-Headers',
-  //     'Origin, X-Requested-With, Content-Type, Accept',
-  // )
-  // @ApiOkResponse({ type: FieldEntity, isArray: true })
-  // async findAll(
-  //     @Query('limit') limit: number,
-  //     @Query('offset') offset: number,
-  // ) {
-  //     try {
-  //         const findAllRes = await this.fieldsService.findAll(limit, offset);
-  //         console.log('All fields', findAllRes);
-  //         return findAllRes;
-  //     } catch (error) {
-  //         console.error('Error finding all fields', error);
-  //     }
-  // }
-
   @Post('get')
   @Header('Access-Control-Allow-Origin', '*')
   @Header(
@@ -54,6 +36,7 @@ export class FieldsController {
     'Origin, X-Requested-With, Content-Type, Accept',
   )
   @ApiOkResponse({ type: FieldEntity, isArray: true })
+  @UsePipes(new ValidationPipe({ transform: true }))
   async findAll(@Body() filters: FilterFieldDto) {
     const { fieldsWithGeo, fieldCount } = await this.fieldsService.findAll(
       filters,

@@ -31,8 +31,6 @@ const getField = (index): CreateFieldDto => {
     familiarity: chooseRandomlyFromEnum(Familiarity),
     latest_satelite_metric: Math.round(Math.random() * 100) / 100,
     latest_attractiveness_metric: Math.round(Math.random() * 100) / 100,
-    latitude: Math.round(Math.random() * 100000),
-    longitude: Math.round(Math.random() * 100000),
     category: chooseRandomlyFromEnum(FieldCategory),
     status: chooseRandomlyFromEnum(FieldStatus),
     created_date: currentDate,

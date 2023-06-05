@@ -27,12 +27,6 @@ export class CreateFieldDto {
   familiarity_desc: string;
 
   @ApiProperty()
-  latitude: number;
-
-  @ApiProperty()
-  longitude: number;
-
-  @ApiProperty()
   polygon?: Polygon;
 
   @ApiProperty()

@@ -131,8 +131,6 @@ model Field {
   region                       Region
   familiarity                  Familiarity
   familiarity_desc             String?
-  latitude                     Float
-  longitude                    Float
   sentinel_id                  String?
   latest_satelite_metric       Float?
   latest_attractiveness_metric Float?
@@ -147,9 +145,12 @@ model Field {
   Attractivenesses             Attractiveness[]
   Geometry                     Geometry?
 
-  @@index(fields: [name], type: Hash)
-  @@index(fields: [latest_satelite_metric, latest_attractiveness_metric], type: BTree)
-  @@index(fields: [latest_attractiveness_metric, latest_satelite_metric], type: BTree)
+  @@index(fields: [latest_satelite_metric, latest_attractiveness_metric, status_date], type: BTree)
+  @@index(fields: [latest_attractiveness_metric, latest_satelite_metric, status_date], type: BTree)
+  @@index(fields: [status_date, latest_satelite_metric, latest_attractiveness_metric], type: BTree)
+  @@index(fields: [status_date, latest_attractiveness_metric, latest_satelite_metric], type: BTree)
+  @@index(fields: [latest_satelite_metric, status_date, latest_attractiveness_metric], type: BTree)
+  @@index(fields: [name], type: SpGist)
 }
 
 model Satellite {
