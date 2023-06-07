@@ -8,15 +8,14 @@ import {
   Param,
   Delete,
   ValidationPipe,
-  UsePipes
-} from "@nestjs/common";
+  UsePipes,
+} from '@nestjs/common';
 import { FieldsService } from './fields.service';
 import { CreateFieldDto } from './dto/create-field.dto';
 import { UpdateFieldDto } from './dto/update-field.dto';
 import { FilterFieldDto } from './dto/filter-field.dto';
 import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { FieldEntity } from './entities/field.entity';
-import { FieldStatus } from '@prisma/client';
 
 @Controller('fields')
 @ApiTags('Fields')
@@ -37,10 +36,9 @@ export class FieldsController {
   )
   @ApiOkResponse({ type: FieldEntity, isArray: true })
   @UsePipes(new ValidationPipe({ transform: true }))
-  async findAll(@Body() filters: FilterFieldDto) {
-    const { fieldsWithGeo, fieldCount } = await this.fieldsService.findAll(
-      filters,
-    );
+  async findAllByFilter(@Body() filters: FilterFieldDto) {
+    const { fieldsWithGeo, fieldCount } =
+      await this.fieldsService.findAllByFilter(filters);
     return { fields: fieldsWithGeo, fieldCount };
   }
 
@@ -49,36 +47,25 @@ export class FieldsController {
   async findOne(@Param('id') id: string) {
     try {
       const findOneRes = await this.fieldsService.findOne(+id);
-      console.log('Field found by id', findOneRes);
+      if (!findOneRes) {
+        console.log('Field found by id', findOneRes);
+      } else {
+        console.log('Field not found by id: ' + id);
+      }
       return findOneRes;
     } catch (error) {
       console.error('Error finding field by id', error);
+      throw error;
     }
-  }
-
-  @Post('/filter')
-  @ApiOkResponse({ type: FieldEntity })
-  findByFilter(@Body() filter: FilterFieldDto) {
-    try {
-      return this.fieldsService.findByFilter(filter);
-    } catch (error) {
-      console.log('Error finding field by filter', error);
-    }
-  }
-
-  @Post('/update/status/:id')
-  @ApiOkResponse({ type: FieldEntity })
-  async updateFieldStatus(@Param('id') id: string, @Body() body: any) {
-    return await this.fieldsService.updateFieldStatus(
-      parseInt(id, 10),
-      FieldStatus[body.status],
-    );
   }
 
   @Patch(':id')
   @ApiOkResponse({ type: FieldEntity })
-  update(@Param('id') id: string, @Body() updateFieldDto: UpdateFieldDto) {
-    return this.fieldsService.update(+id, updateFieldDto);
+  async updateOne(
+    @Param('id') id: string,
+    @Body() updateFieldDto: UpdateFieldDto,
+  ) {
+    return this.fieldsService.updateOne(+id, updateFieldDto);
   }
 
   @Delete(':id')
