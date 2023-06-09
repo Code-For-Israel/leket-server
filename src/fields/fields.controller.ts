@@ -1,14 +1,13 @@
 import {
-  Header,
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  ValidationPipe,
+  Get,
+  Param,
+  Patch,
+  Post,
   UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { FieldsService } from './fields.service';
 import { CreateFieldDto } from './dto/create-field.dto';
@@ -16,24 +15,26 @@ import { UpdateFieldDto } from './dto/update-field.dto';
 import { FilterFieldDto } from './dto/filter-field.dto';
 import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { FieldEntity } from './entities/field.entity';
+import { FilterFieldByPointDto } from './dto/filter-field-point.dto';
 
 @Controller('fields')
 @ApiTags('Fields')
 export class FieldsController {
   constructor(private readonly fieldsService: FieldsService) {}
 
-  @Post()
+  @Post('create')
   @ApiCreatedResponse({ type: FieldEntity })
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
   async create(@Body() createFieldDto: CreateFieldDto) {
-    return this.fieldsService.create(createFieldDto);
+    try {
+      return this.fieldsService.create(createFieldDto);
+    } catch (e) {
+      console.error('Error creating field', e);
+      throw e;
+    }
   }
 
-  @Post('get')
-  @Header('Access-Control-Allow-Origin', '*')
-  @Header(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept',
-  )
+  @Post('get-field-by-filter')
   @ApiOkResponse({ type: FieldEntity, isArray: true })
   @UsePipes(new ValidationPipe({ transform: true }))
   async findAllByFilter(@Body() filters: FilterFieldDto) {
@@ -42,7 +43,7 @@ export class FieldsController {
     return { fields: fieldsWithGeo, fieldCount };
   }
 
-  @Get(':id')
+  @Get('get-field/:id')
   @ApiOkResponse({ type: FieldEntity })
   async findOne(@Param('id') id: string) {
     try {
@@ -59,7 +60,7 @@ export class FieldsController {
     }
   }
 
-  @Patch(':id')
+  @Patch('update-field/:id')
   @ApiOkResponse({ type: FieldEntity })
   async updateOne(
     @Param('id') id: string,
@@ -68,10 +69,23 @@ export class FieldsController {
     return this.fieldsService.updateOne(+id, updateFieldDto);
   }
 
-  @Delete(':id')
+  @Delete('delete-field/:id')
   @ApiOkResponse({ type: FieldEntity })
   async remove(@Param('id') id: string) {
     const result = await this.fieldsService.remove(+id);
     return { status: result };
+  }
+
+  @Post('get-field-by-point')
+  @ApiOkResponse({ type: FieldEntity })
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  async getFieldThatIntersectsWithPoint(@Body() body: FilterFieldByPointDto) {
+    const { point } = body;
+    try {
+      return await this.fieldsService.getFieldByPoint(point);
+    } catch (e) {
+      console.error('Error finding field by point', e);
+      throw e;
+    }
   }
 }

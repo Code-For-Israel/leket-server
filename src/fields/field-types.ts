@@ -1,3 +1,5 @@
+import { Point, Polygon } from 'geojson';
+
 export interface FieldIdsIntersectionsPrisma {
   field_id: number;
 }
@@ -15,4 +17,9 @@ export interface FilterAttractivenessRange {
 export interface FilterDateRange {
   dateFrom: Date;
   dateTo: Date;
+}
+
+export interface FieldGeometry {
+  point: Point;
+  polygon: Polygon;
 }

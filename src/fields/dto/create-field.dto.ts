@@ -7,49 +7,77 @@ import {
   Product,
   Region,
 } from '@prisma/client';
+import { IsDate, IsEnum, IsNotEmpty, IsOptional, IsNumber } from "class-validator";
+import { Type } from 'class-transformer';
+
 export class CreateFieldDto {
   @ApiProperty()
+  @IsNotEmpty()
   name: string;
 
   @ApiProperty({ required: false })
+  @IsNotEmpty()
+  @IsEnum(Product)
   product_name?: Product;
 
   @ApiProperty({ required: false })
   farmer_id?: string;
 
   @ApiProperty()
+  @IsNotEmpty()
+  @IsEnum(Region)
   region: Region;
 
   @ApiProperty()
+  @IsNotEmpty()
+  @IsEnum(Familiarity)
   familiarity: Familiarity;
 
   @ApiProperty()
   familiarity_desc: string;
 
   @ApiProperty()
-  polygon?: Polygon;
+  @Type(() => Polygon)
+  @IsNotEmpty()
+  polygon: Polygon;
 
   @ApiProperty()
-  point?: Point;
+  @Type(() => Point)
+  @IsNotEmpty()
+  point: Point;
 
   @ApiProperty({ required: false })
+  @IsNumber()
+  @IsOptional()
   latest_satelite_metric?: number;
 
   @ApiProperty({ required: false })
+  @IsNumber()
+  @IsOptional()
   latest_attractiveness_metric?: number;
 
   @ApiProperty()
+  @IsNotEmpty()
+  @IsEnum(FieldCategory)
   category: FieldCategory;
 
   @ApiProperty()
+  @IsNotEmpty()
+  @IsEnum(FieldStatus)
   status: FieldStatus;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
+  @IsDate()
+  @IsOptional()
   status_date: Date;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
+  @IsDate()
+  @IsOptional()
   delay_date: Date;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
+  @IsDate()
+  @IsOptional()
   created_date: Date;
 }

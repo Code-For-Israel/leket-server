@@ -8,6 +8,7 @@ import {
   FieldCategory,
 } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
+import { Point, Polygon } from 'geojson';
 
 export class FieldEntity implements Field {
   @ApiProperty()
@@ -32,12 +33,6 @@ export class FieldEntity implements Field {
   region: Region;
 
   @ApiProperty()
-  latitude: number;
-
-  @ApiProperty()
-  longitude: number;
-
-  @ApiProperty()
   sentinel_id: string;
 
   @ApiProperty()
@@ -51,6 +46,12 @@ export class FieldEntity implements Field {
 
   @ApiProperty()
   status: FieldStatus;
+
+  @ApiProperty()
+  polygon: Polygon;
+
+  @ApiProperty()
+  point: Point;
 
   @ApiProperty()
   status_date: Date | null;

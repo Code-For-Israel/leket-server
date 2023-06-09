@@ -7,7 +7,7 @@ import { Field, Prisma } from '@prisma/client';
 import { Point, Polygon } from 'geojson';
 import { _ } from 'lodash';
 import { FieldStatus } from '@prisma/client';
-import { FieldIdsIntersectionsPrisma } from './field-types';
+import { FieldGeometry, FieldIdsIntersectionsPrisma } from './field-types';
 import { FilterFieldDto } from './dto/filter-field.dto';
 
 @Injectable()
@@ -19,7 +19,7 @@ export class FieldsService {
     private historiesService: HistoriesService,
   ) {}
   async create(createFieldDto: CreateFieldDto) {
-    // TODO: add history creation
+    // TODO: transact history creation
     const fieldPolygon = createFieldDto.polygon;
     const fieldPoint = createFieldDto.point;
     const fieldWithoutGeometry = _.omit(createFieldDto, [
@@ -31,7 +31,7 @@ export class FieldsService {
         data: fieldWithoutGeometry,
       });
       console.log('Field created', field);
-      await this.addGeometryToField(field.id, fieldPolygon, fieldPoint);
+      await this.createGeometryToField(field.id, fieldPolygon, fieldPoint);
       return field;
     } catch (error) {
       if (error instanceof GeometryCreationFailedError) {
@@ -98,13 +98,15 @@ export class FieldsService {
     return { fieldsWithGeo, fieldCount };
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, fieldGeometry: FieldGeometry = null) {
     const field = await this.prisma.field.findUnique({ where: { id } });
     if (field) {
+      if (fieldGeometry) {
+        return this.concatFieldsWithGeometry(field, fieldGeometry);
+      }
       return this.getGeometryForField(field);
-    } else {
-      return {};
     }
+    return {};
   }
 
   async updateOne(id: number, updateFieldDto: UpdateFieldDto) {
@@ -132,6 +134,17 @@ export class FieldsService {
     const removeFieldRes = await this.prisma.field.delete({ where: { id } });
     await this.deleteHistoriesForField(removeFieldRes);
     return 'ok';
+  }
+
+  async getFieldByPoint(point: Point): Promise<Field | any> {
+    const fieldGeometry: any[] = await this.prisma
+      .$queryRaw`SELECT field_id, ST_AsText(polygon) as polygon, ST_AsText(point) as point FROM "Geometry" WHERE ST_Within(ST_GeomFromGeoJSON(${point}), "Geometry".polygon)`;
+    if (fieldGeometry.length > 0) {
+      const { field_id: fieldId, polygon, point } = fieldGeometry[0]; // field polygon is unique
+      return this.findOne(fieldId, { polygon, point });
+    } else {
+      return {};
+    }
   }
 
   private async createWhereClause(
@@ -188,18 +201,6 @@ export class FieldsService {
     return _.omitBy(whereClause, _.isUndefined);
   }
 
-  private cleanWhereClause(whereClause) {
-    if (_.isObject(whereClause)) {
-      const cleaned = _.pickBy(whereClause, (value) => {
-        return !_.isUndefined(value) || !_.isEmpty(value);
-      });
-
-      return _.mapValues(cleaned, whereClause);
-    }
-
-    return whereClause;
-  }
-
   private async findIntersectedFields(
     polygonFilter: Polygon,
   ): Promise<number[]> {
@@ -238,7 +239,7 @@ export class FieldsService {
     }
   }
 
-  private async addGeometryToField(
+  private async createGeometryToField(
     field_id: number,
     fieldPolygon: Polygon,
     fieldPoint: Point,
@@ -264,7 +265,7 @@ export class FieldsService {
         console.error('No geometry found for field id: ' + fieldId);
         return field;
       }
-      return Object.assign({}, field, fieldGeometryRes[0]);
+      return this.concatFieldsWithGeometry(field, fieldGeometryRes[0]);
     } catch (e) {
       console.error('Error getting geometry for field id: ' + field.id);
       throw e;
@@ -279,12 +280,23 @@ export class FieldsService {
     }
   }
 
+  /**
+   * @param fields
+   * @returns fields with geometry
+   * **/
   private async getFieldsGeometry(fields: Field[]): Promise<Field[]> {
     return await Promise.all(
       fields.map(async (field) => {
         return this.getGeometryForField(field);
       }),
     );
+  }
+
+  private async concatFieldsWithGeometry(
+    field: Field,
+    geometry: FieldGeometry,
+  ): Promise<Field> {
+    return Object.assign({}, field, geometry);
   }
 }
 

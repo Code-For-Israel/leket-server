@@ -52,6 +52,6 @@ export class SatellitesService {
   private async updateFieldLastNdvi(satelliteRes: Satellite) {
     const fieldId = satelliteRes.field_id;
     const updateFieldDto = { latest_satelite_metric: satelliteRes.id };
-    await this.fieldService.update(fieldId, updateFieldDto);
+    await this.fieldService.updateOne(fieldId, updateFieldDto);
   }
 }
