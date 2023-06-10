@@ -137,6 +137,7 @@ export class FieldsService {
   }
 
   async getFieldByPoint(point: Point): Promise<Field | any> {
+    // TODO: read as geojson instead of text
     const fieldGeometry: any[] = await this.prisma
       .$queryRaw`SELECT field_id, ST_AsText(polygon) as polygon, ST_AsText(point) as point FROM "Geometry" WHERE ST_Within(ST_GeomFromGeoJSON(${point}), "Geometry".polygon)`;
     if (fieldGeometry.length > 0) {

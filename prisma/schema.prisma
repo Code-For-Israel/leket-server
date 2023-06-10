@@ -136,7 +136,7 @@ model Field {
   latest_attractiveness_metric Float?
   category                     FieldCategory?
   status                       FieldStatus
-  status_date                  DateTime?
+  status_date                  DateTime?        @default(now())
   delay_date                   DateTime?
   created_date                 DateTime         @default(now())
   Missions                     Mission[]
@@ -155,7 +155,7 @@ model Field {
 
 model Satellite {
   id         Int      @id @default(autoincrement())
-  date       DateTime
+  date       DateTime @default(now())
   field      Field    @relation(fields: [field_id], references: [id])
   field_id   Int
   statistics Json
@@ -168,7 +168,7 @@ model Attractiveness {
   id              Int      @id @default(autoincrement())
   field           Field    @relation(fields: [field_id], references: [id])
   field_id        Int
-  date            DateTime
+  date            DateTime @default(now())
   mission_score   Float
   market_score    Float
   satellite_score Float
@@ -187,7 +187,7 @@ model Market {
 
 model Mission {
   id              Int      @id @default(autoincrement())
-  date            DateTime
+  date            DateTime @default(now())
   field           Field    @relation(fields: [field_id], references: [id])
   field_id        Int
   product_name    Product
