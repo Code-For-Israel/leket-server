@@ -20,8 +20,7 @@ export class FieldsService {
   ) {}
   async create(createFieldDto: CreateFieldDto) {
     // TODO: transact history creation
-    const fieldPolygon = createFieldDto.polygon;
-    const fieldPoint = createFieldDto.point;
+    const fieldGeometry = this.extractGeometryFromField(createFieldDto);
     const fieldWithoutGeometry = _.omit(createFieldDto, [
       this.polygon,
       this.point,
@@ -31,8 +30,8 @@ export class FieldsService {
         data: fieldWithoutGeometry,
       });
       console.log('Field created', field);
-      await this.createGeometryToField(field.id, fieldPolygon, fieldPoint);
-      return field;
+      await this.createGeometryToField(field.id, fieldGeometry);
+      return this.concatFieldsWithGeometry(field, fieldGeometry);
     } catch (error) {
       if (error instanceof GeometryCreationFailedError) {
         console.error('Error creating field geometry: ', error);
@@ -122,7 +121,12 @@ export class FieldsService {
           updateFieldRes,
           updateFieldDto,
         );
-        return this.getFieldsGeometry([updateFieldRes]);
+        const fieldWithGeometry = await this.getFieldsGeometry([
+          updateFieldRes,
+        ]);
+        if (fieldWithGeometry.length > 0) {
+          return fieldWithGeometry[0];
+        }
       });
     } catch (error) {
       console.log('Error updating Field', error);
@@ -137,9 +141,8 @@ export class FieldsService {
   }
 
   async getFieldByPoint(point: Point): Promise<Field | any> {
-    // TODO: read as geojson instead of text
     const fieldGeometry: any[] = await this.prisma
-      .$queryRaw`SELECT field_id, ST_AsText(polygon) as polygon, ST_AsText(point) as point FROM "Geometry" WHERE ST_Within(ST_GeomFromGeoJSON(${point}), "Geometry".polygon)`;
+      .$queryRaw`SELECT field_id, ST_AsGeoJson(polygon) as polygon, ST_AsGeoJson(point) as point FROM "Geometry" WHERE ST_Within(ST_GeomFromGeoJSON(${point}), "Geometry".polygon)`;
     if (fieldGeometry.length > 0) {
       const { field_id: fieldId, polygon, point } = fieldGeometry[0]; // field polygon is unique
       return this.findOne(fieldId, { polygon, point });
@@ -242,13 +245,22 @@ export class FieldsService {
 
   private async createGeometryToField(
     field_id: number,
-    fieldPolygon: Polygon,
-    fieldPoint: Point,
-  ) {
+    fieldGeometry: FieldGeometry,
+  ): Promise<any> {
     try {
-      await this.prisma.$queryRaw(
-        Prisma.sql`INSERT INTO "Geometry" (field_id, polygon, point) VALUES (${field_id}, ST_GeomFromGeoJSON(${fieldPolygon}), ST_GeomFromGeoJSON(${fieldPoint}));`,
-      );
+      if (fieldGeometry.polygon && fieldGeometry.point) {
+        await this.prisma.$queryRaw(
+          Prisma.sql`INSERT INTO "Geometry" (field_id, polygon, point) VALUES (${field_id}, ST_GeomFromGeoJSON(${fieldGeometry.polygon}), ST_GeomFromGeoJSON(${fieldGeometry.point}));`,
+        );
+      } else if (fieldGeometry.polygon) {
+        await this.prisma.$queryRaw(
+          Prisma.sql`INSERT INTO "Geometry" (field_id, polygon) VALUES (${field_id}, ST_GeomFromGeoJSON(${fieldGeometry.polygon}));`,
+        );
+      } else if (fieldGeometry.point) {
+        await this.prisma.$queryRaw(
+          Prisma.sql`INSERT INTO "Geometry" (field_id, point) VALUES (${field_id}, ST_GeomFromGeoJSON(${fieldGeometry.point}));`,
+        );
+      }
     } catch (e) {
       throw new GeometryCreationFailedError(
         'Error creating geometry for field',
@@ -298,6 +310,13 @@ export class FieldsService {
     geometry: FieldGeometry,
   ): Promise<Field> {
     return Object.assign({}, field, geometry);
+  }
+
+  private extractGeometryFromField(
+    createFieldDto: CreateFieldDto,
+  ): FieldGeometry {
+    const { polygon, point } = createFieldDto;
+    return { polygon, point };
   }
 }
 

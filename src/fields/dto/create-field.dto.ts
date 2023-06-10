@@ -38,12 +38,12 @@ export class CreateFieldDto {
 
   @ApiProperty()
   @Type(() => Polygon)
-  @IsNotEmpty()
+  @IsOptional()
   polygon: Polygon;
 
   @ApiProperty()
   @Type(() => Point)
-  @IsNotEmpty()
+  @IsOptional()
   point: Point;
 
   @ApiProperty({ required: false })
