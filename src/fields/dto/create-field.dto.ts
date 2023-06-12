@@ -7,7 +7,13 @@ import {
   Product,
   Region,
 } from '@prisma/client';
-import { IsDate, IsEnum, IsNotEmpty, IsOptional, IsNumber } from "class-validator";
+import {
+  IsDate,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsNumber,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateFieldDto {
@@ -21,7 +27,8 @@ export class CreateFieldDto {
   product_name?: Product;
 
   @ApiProperty({ required: false })
-  farmer_id?: string;
+  @IsOptional()
+  farmer_id: string;
 
   @ApiProperty()
   @IsNotEmpty()
@@ -34,6 +41,7 @@ export class CreateFieldDto {
   familiarity: Familiarity;
 
   @ApiProperty()
+  @IsOptional()
   familiarity_desc: string;
 
   @ApiProperty()
