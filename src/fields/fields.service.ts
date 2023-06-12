@@ -109,7 +109,6 @@ export class FieldsService {
   }
 
   async updateOne(id: number, updateFieldDto: UpdateFieldDto) {
-    // TODO: add filter validation
     try {
       this.prepareToStatusUpdateIfRequired(updateFieldDto);
       return await this.prisma.$transaction(async (transactionPrisma) => {
@@ -121,12 +120,7 @@ export class FieldsService {
           updateFieldRes,
           updateFieldDto,
         );
-        const fieldWithGeometry = await this.getFieldsGeometry([
-          updateFieldRes,
-        ]);
-        if (fieldWithGeometry.length > 0) {
-          return fieldWithGeometry[0];
-        }
+        return this.getGeometryForField(updateFieldRes);
       });
     } catch (error) {
       console.log('Error updating Field', error);
@@ -275,7 +269,7 @@ export class FieldsService {
         Prisma.sql`SELECT ST_AsGeoJSON(polygon) as polygon, ST_AsGeoJSON(point) as point FROM "Geometry" WHERE field_id = ${fieldId};`,
       );
       if (fieldGeometryRes.length === 0) {
-        console.error('No geometry found for field id: ' + fieldId);
+        console.warn('No geometry found for field id: ' + fieldId);
         return field;
       }
       return this.concatFieldsWithGeometry(field, fieldGeometryRes[0]);
