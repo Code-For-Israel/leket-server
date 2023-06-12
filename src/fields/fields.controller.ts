@@ -48,8 +48,8 @@ export class FieldsController {
   async findOne(@Param('id') id: string) {
     try {
       const findOneRes = await this.fieldsService.findOne(+id);
-      if (!findOneRes) {
-        console.log('Field found by id', findOneRes);
+      if (findOneRes) {
+        console.log('Field found: ', findOneRes);
       } else {
         console.log('Field not found by id: ' + id);
       }
@@ -66,6 +66,7 @@ export class FieldsController {
     @Param('id') id: string,
     @Body() updateFieldDto: UpdateFieldDto,
   ) {
+    // TODO: add filter validation
     return this.fieldsService.updateOne(+id, updateFieldDto);
   }
 

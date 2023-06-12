@@ -7,25 +7,28 @@ import { Field, Prisma } from '@prisma/client';
 import { Point, Polygon } from 'geojson';
 import { _ } from 'lodash';
 import { FieldStatus } from '@prisma/client';
-import { FieldGeometry, FieldIdsIntersectionsPrisma } from './field-types';
+import {
+  FieldAndGeometry,
+  FieldGeometry,
+  FieldIdsIntersectionsPrisma,
+} from './field-types';
 import { FilterFieldDto } from './dto/filter-field.dto';
 
 @Injectable()
 export class FieldsService {
   private readonly polygon = 'polygon';
   private readonly point = 'point';
+
   constructor(
     private prisma: PrismaService,
     private historiesService: HistoriesService,
   ) {}
+
   async create(createFieldDto: CreateFieldDto) {
     // TODO: transact history creation
-    const fieldGeometry = this.extractGeometryFromField(createFieldDto);
-    const fieldWithoutGeometry = _.omit(createFieldDto, [
-      this.polygon,
-      this.point,
-    ]);
     try {
+      const { fieldGeometry, fieldWithoutGeometry } =
+        this.extractGeometryFromField(createFieldDto);
       const field = await this.prisma.field.create({
         data: fieldWithoutGeometry,
       });
@@ -110,17 +113,30 @@ export class FieldsService {
 
   async updateOne(id: number, updateFieldDto: UpdateFieldDto) {
     try {
+      const { fieldGeometry, fieldWithoutGeometry } =
+        this.extractGeometryFromField(updateFieldDto);
       this.prepareToStatusUpdateIfRequired(updateFieldDto);
       return await this.prisma.$transaction(async (transactionPrisma) => {
         const updateFieldRes = await transactionPrisma.field.update({
           where: { id },
-          data: updateFieldDto,
+          data: fieldWithoutGeometry,
         });
+        const fieldGeometryRes = await this.updateGeometryToField(
+          id,
+          fieldGeometry,
+        );
         await this.createHistoryForFieldIfRequired(
           updateFieldRes,
           updateFieldDto,
         );
-        return this.getGeometryForField(updateFieldRes);
+        if (fieldGeometryRes?.length > 0) {
+          return this.concatFieldsWithGeometry(
+            updateFieldRes,
+            fieldGeometryRes[0],
+          );
+        } else {
+          return this.getGeometryForField(updateFieldRes);
+        }
       });
     } catch (error) {
       console.log('Error updating Field', error);
@@ -262,6 +278,31 @@ export class FieldsService {
     }
   }
 
+  private async updateGeometryToField(
+    field_id: number,
+    fieldGeometry: FieldGeometry,
+  ): Promise<any> {
+    try {
+      if (fieldGeometry.polygon && fieldGeometry.point) {
+        return this.prisma.$queryRaw(
+          Prisma.sql`UPDATE "Geometry" SET polygon = ST_GeomFromGeoJSON(${fieldGeometry.polygon}), point = ST_GeomFromGeoJSON(${fieldGeometry.point}) WHERE field_id = ${field_id} returning field_id, ST_AsGeoJSON(polygon) as polygon, ST_AsGeoJSON(point) as point;`,
+        );
+      } else if (fieldGeometry.polygon) {
+        return this.prisma.$queryRaw(
+          Prisma.sql`UPDATE "Geometry" SET polygon = ST_GeomFromGeoJSON(${fieldGeometry.polygon}) WHERE field_id = ${field_id} returning field_id, ST_AsGeoJSON(polygon) as polygon, ST_AsGeoJSON(point) as point;`,
+        );
+      } else if (fieldGeometry.point) {
+        return this.prisma.$queryRaw(
+          Prisma.sql`UPDATE "Geometry" SET point = ST_GeomFromGeoJSON(${fieldGeometry.point}) WHERE field_id = ${field_id} returning field_id, ST_AsGeoJSON(polygon) as polygon, ST_AsGeoJSON(point) as point;`,
+        );
+      }
+    } catch (e) {
+      throw new GeometryCreationFailedError(
+        'Error creating geometry for field',
+      );
+    }
+  }
+
   private async getGeometryForField(field: Field): Promise<Field> {
     try {
       const fieldId = field.id;
@@ -307,10 +348,18 @@ export class FieldsService {
   }
 
   private extractGeometryFromField(
-    createFieldDto: CreateFieldDto,
-  ): FieldGeometry {
-    const { polygon, point } = createFieldDto;
-    return { polygon, point };
+    createFieldDto: CreateFieldDto | UpdateFieldDto,
+  ): FieldAndGeometry {
+    const fieldGeometry: FieldGeometry = {
+      polygon: createFieldDto.polygon,
+      point: createFieldDto.point,
+    };
+    const fieldWithoutGeometry: Field = _.omit(createFieldDto, [
+      'polygon',
+      'point',
+    ]);
+
+    return { fieldGeometry, fieldWithoutGeometry };
   }
 }
 

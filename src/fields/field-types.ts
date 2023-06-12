@@ -1,4 +1,5 @@
 import { Point, Polygon } from 'geojson';
+import { Field } from '@prisma/client';
 
 export interface FieldIdsIntersectionsPrisma {
   field_id: number;
@@ -22,4 +23,9 @@ export interface FilterDateRange {
 export interface FieldGeometry {
   point: Point;
   polygon: Polygon;
+}
+
+export interface FieldAndGeometry {
+  fieldGeometry: FieldGeometry;
+  fieldWithoutGeometry: Field;
 }
