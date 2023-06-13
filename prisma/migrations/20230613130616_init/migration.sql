@@ -17,6 +17,16 @@ CREATE TYPE "Region" AS ENUM ('SOUTH', 'NORTH', 'CENTER');
 CREATE TYPE "Product" AS ENUM ('AVOCADO', 'WATERMELON', 'PECAN', 'PEAR', 'PINEAPPLE', 'PERSIMMON', 'PEACH', 'ARTICHOKE', 'GRAPEFRUIT', 'BASIL', 'SWEET_POTATO', 'BANANA', 'GREEN_ONIONS', 'ONION', 'BROCCOLI', 'GAMBA', 'GIVAY', 'CARROT', 'CHERRY', 'SQUASH', 'PUMPKIN', 'QUINCE', 'LETTUCE', 'EGGPLANT', 'CORIANDER', 'CABBAGE', 'CAULIFLOWER', 'LOVIA', 'ARUM', 'LEMON', 'LICHY', 'TURNIP', 'CUCUMBER', 'MANGO', 'APRICOT', 'MANDARIN', 'NECTARINE', 'BEET', 'CELERY', 'TOMATO', 'CHERRY_TOMATO', 'CHARD', 'GRAPE', 'POMELA', 'POMLIT', 'PARSLEY', 'MUSHROOMS', 'HOT_PEPPER', 'PEPPER', 'PASSIONFRUIT', 'PAPAYA', 'SABRA', 'RADISH', 'COLORBY', 'KIWI', 'ZUCCHINI', 'CLEMENTINE', 'CARAMBOLA', 'POMEGRANATE', 'GARLIC', 'FENNEL', 'PLUM', 'LOQUAT', 'DILL', 'BEAN', 'STRAWBERRY', 'CORN', 'DATE', 'POTATO', 'APPLE', 'ORANGE');
 
 -- CreateTable
+CREATE TABLE "User" (
+    "id" SERIAL NOT NULL,
+    "username" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
+    "created_date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Geometry" (
     "field_id" INTEGER NOT NULL,
     "polygon" geometry,
@@ -34,14 +44,12 @@ CREATE TABLE "Field" (
     "region" "Region" NOT NULL,
     "familiarity" "Familiarity" NOT NULL,
     "familiarity_desc" TEXT,
-    "latitude" DOUBLE PRECISION NOT NULL,
-    "longitude" DOUBLE PRECISION NOT NULL,
     "sentinel_id" TEXT,
     "latest_satelite_metric" DOUBLE PRECISION,
     "latest_attractiveness_metric" DOUBLE PRECISION,
     "category" "FieldCategory",
     "status" "FieldStatus" NOT NULL,
-    "status_date" TIMESTAMP(3),
+    "status_date" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
     "delay_date" TIMESTAMP(3),
     "created_date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -51,7 +59,7 @@ CREATE TABLE "Field" (
 -- CreateTable
 CREATE TABLE "Satellite" (
     "id" SERIAL NOT NULL,
-    "date" TIMESTAMP(3) NOT NULL,
+    "date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "field_id" INTEGER NOT NULL,
     "statistics" JSONB NOT NULL,
     "like" BOOLEAN NOT NULL,
@@ -63,7 +71,7 @@ CREATE TABLE "Satellite" (
 CREATE TABLE "Attractiveness" (
     "id" SERIAL NOT NULL,
     "field_id" INTEGER NOT NULL,
-    "date" TIMESTAMP(3) NOT NULL,
+    "date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "mission_score" DOUBLE PRECISION NOT NULL,
     "market_score" DOUBLE PRECISION NOT NULL,
     "satellite_score" DOUBLE PRECISION NOT NULL,
@@ -86,7 +94,7 @@ CREATE TABLE "Market" (
 -- CreateTable
 CREATE TABLE "Mission" (
     "id" SERIAL NOT NULL,
-    "date" TIMESTAMP(3) NOT NULL,
+    "date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "field_id" INTEGER NOT NULL,
     "product_name" "Product" NOT NULL,
     "amount_kg" DOUBLE PRECISION NOT NULL,
@@ -109,13 +117,25 @@ CREATE TABLE "History" (
 );
 
 -- CreateIndex
-CREATE INDEX "Field_name_idx" ON "Field" USING HASH ("name");
+CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
 
 -- CreateIndex
-CREATE INDEX "Field_latest_satelite_metric_latest_attractiveness_metric_idx" ON "Field"("latest_satelite_metric", "latest_attractiveness_metric");
+CREATE INDEX "Field_latest_satelite_metric_latest_attractiveness_metric_s_idx" ON "Field"("latest_satelite_metric", "latest_attractiveness_metric", "status_date");
 
 -- CreateIndex
-CREATE INDEX "Field_latest_attractiveness_metric_latest_satelite_metric_idx" ON "Field"("latest_attractiveness_metric", "latest_satelite_metric");
+CREATE INDEX "Field_latest_attractiveness_metric_latest_satelite_metric_s_idx" ON "Field"("latest_attractiveness_metric", "latest_satelite_metric", "status_date");
+
+-- CreateIndex
+CREATE INDEX "Field_status_date_latest_satelite_metric_latest_attractiven_idx" ON "Field"("status_date", "latest_satelite_metric", "latest_attractiveness_metric");
+
+-- CreateIndex
+CREATE INDEX "Field_status_date_latest_attractiveness_metric_latest_satel_idx" ON "Field"("status_date", "latest_attractiveness_metric", "latest_satelite_metric");
+
+-- CreateIndex
+CREATE INDEX "Field_latest_satelite_metric_status_date_latest_attractiven_idx" ON "Field"("latest_satelite_metric", "status_date", "latest_attractiveness_metric");
+
+-- CreateIndex
+CREATE INDEX "Field_name_idx" ON "Field" USING SPGIST ("name");
 
 -- CreateIndex
 CREATE INDEX "Satellite_field_id_idx" ON "Satellite" USING HASH ("field_id");

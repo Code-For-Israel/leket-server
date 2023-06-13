@@ -116,6 +116,13 @@ enum Product {
   ORANGE
 }
 
+model User {
+  id            Int      @id @default(autoincrement())
+  username      String   @unique
+  password      String
+  created_date  DateTime @default(now())
+}
+
 model Geometry {
   Field    Field                    @relation(fields: [field_id], references: [id])
   field_id Int                      @id
