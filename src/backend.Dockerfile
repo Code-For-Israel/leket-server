@@ -8,7 +8,7 @@ RUN apk add --update --no-cache openssl1.1-compat
 COPY . .
 
 # Prisma configuration
-RUN npx prisma generate
+RUN npx prisma migrate deploy
 
 EXPOSE 3000
 
