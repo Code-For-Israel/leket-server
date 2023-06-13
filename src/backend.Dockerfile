@@ -7,10 +7,12 @@ RUN npm install
 RUN apk add --update --no-cache openssl1.1-compat
 COPY . .
 
-# Prisma configuration
-# RUN npx prisma migrate dev --name init
+# Remove previous prisma client installation
+RUN rm -rf node_modules/@prisma/client
 
-RUN npx prisma migrate deploy --force
+# Generate prisma client
+RUN npx prisma generate
+
 
 EXPOSE 3000
 

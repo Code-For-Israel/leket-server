@@ -118,7 +118,7 @@ function getPolygonCenter(polygon: number[][]) {
 async function insertRandomFields(polygons: any[]) {
   let polygon;
   let point;
-  for (let i = 0; i < polygons.length; i++) {
+  for (let i = 0; i < 20 ; i++) {
     const field = await prisma.field.create({ data: getField(i) });
 
     polygon = JSON.parse(polygons[i]);
