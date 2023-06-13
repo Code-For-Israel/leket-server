@@ -9,6 +9,8 @@ COPY . .
 
 # Prisma configuration
 RUN npx prisma migrate reset --force
+# RUN npx prisma migrate dev --name init
+# RUN npx prisma migrate deploy --force
 
 EXPOSE 3000
 
