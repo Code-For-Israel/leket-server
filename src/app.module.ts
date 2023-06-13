@@ -40,7 +40,7 @@ export class AppModule implements NestModule {
     configure(consumer: MiddlewareConsumer) {
         consumer
             .apply(JwtMiddleware)
-            .exclude('/auth/login', '/auth/signup') // Exclude 'auth/login' route from authentication
+            .exclude('/auth/login', '/auth/signup', '/auth/pulse') // Exclude 'auth/login' route from authentication
             .forRoutes('*');
     }
 }

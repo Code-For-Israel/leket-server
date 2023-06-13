@@ -1,4 +1,4 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import {Controller, Post, Body, Get} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserDto } from './dto/user.dto';
 import {ApiBearerAuth, ApiOperation, ApiResponse, ApiTags} from "@nestjs/swagger";
@@ -23,5 +23,12 @@ export class AuthController {
     async login(@Body() createUserDto: UserDto): Promise<{ accessToken: string }> {
         const { username, password } = createUserDto;
         return this.authService.login(username, password);
+    }
+
+    @ApiOperation({ summary: 'App pulse' })
+    @ApiResponse({ status: 200, description: 'Check that app is up' })
+    @Get('pulse')
+    async pulse() {
+        return "We have pulse!";
     }
 }
