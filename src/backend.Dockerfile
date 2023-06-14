@@ -11,8 +11,7 @@ COPY . .
 RUN rm -rf node_modules/@prisma/client
 
 # Generate prisma client
-RUN npx prisma migrate reset
-RUN npx prisma migrate dev --name name_of_your_migration
+RUN npx prisma generate
 
 
 EXPOSE 3000
