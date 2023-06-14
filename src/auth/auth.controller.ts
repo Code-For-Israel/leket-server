@@ -35,6 +35,6 @@ export class AuthController {
     @ApiResponse({ status: 200 })
     @Get('db')
     async db() {
-        return this.authService.cehckDb();
+        return this.authService.checkDb();
     }
 }

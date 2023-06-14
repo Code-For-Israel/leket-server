@@ -29,9 +29,9 @@ export class AuthService {
         });
     }
 
-    async cehckDb() {
-        const users = await this.prisma.user.findMany();
-        return users.length;
+    async checkDb() {
+        const fields = await this.prisma.field.findMany();
+        return fields.length;
     }
 
     async login(username: string, password: string): Promise<{ accessToken: string }> {
