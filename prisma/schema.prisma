@@ -5,7 +5,7 @@ generator client {
 
 datasource db {
   provider   = "postgresql"
-  url        = env("DATABASE_URL")
+  url        = "postgresql://postgres:CK1Usprm9qC662tBve4R@leket-israel-database.chsagdvhbyzn.us-east-1.rds.amazonaws.com:5432/leket-israel-database"
   extensions = [postgis(version: "3.3.2")]
 }
 

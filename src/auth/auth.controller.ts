@@ -35,6 +35,7 @@ export class AuthController {
     @ApiResponse({ status: 200 })
     @Get('db')
     async db() {
-        return this.authService.checkDb();
+        const num = await this.authService.checkDb();
+        return `${num} records`;
     }
 }
