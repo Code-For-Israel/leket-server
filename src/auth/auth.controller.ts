@@ -29,7 +29,7 @@ export class AuthController {
     @ApiResponse({ status: 200, description: 'Check that app is up' })
     @Get('pulse')
     async pulse() {
-        return `Found pulse at ${new Date()}`;
+        return `Found pulse at ${new Date()}.`;
     }
 
     @ApiResponse({ status: 200 })
