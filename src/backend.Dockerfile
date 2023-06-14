@@ -12,9 +12,7 @@ COPY . .
 # Generate Prisma Client
 RUN npx prisma generate
 
-# Run the migrations to apply the schema to your database
-CMD ["npx", "prisma", "migrate", "deploy"]
-
 EXPOSE 3000
 
-CMD npm start
+# Run the migrations to apply the schema to your database
+CMD ["npx", "prisma", "migrate", "deploy", "&&", "npm", "start"]
