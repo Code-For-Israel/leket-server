@@ -31,4 +31,10 @@ export class AuthController {
     async pulse() {
         return `Found pulse at ${new Date()}`;
     }
+
+    @ApiResponse({ status: 200 })
+    @Get('db')
+    async db() {
+        return this.authService.cehckDb();
+    }
 }

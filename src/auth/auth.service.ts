@@ -29,6 +29,11 @@ export class AuthService {
         });
     }
 
+    async cehckDb() {
+        const users = await this.prisma.user.findMany();
+        return users.length;
+    }
+
     async login(username: string, password: string): Promise<{ accessToken: string }> {
         // Find the user with the provided username
         const user = await this.prisma.user.findUnique({ where: { username } });
