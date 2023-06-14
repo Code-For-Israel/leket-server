@@ -4,14 +4,16 @@ WORKDIR /usr/src/app
 
 COPY package.json .
 RUN npm install
+
 RUN apk add --update --no-cache openssl1.1-compat
+
 COPY . .
 
-RUN npx prisma migrate dev --name "init"
-
-# Generate prisma client
+# Generate Prisma Client
 RUN npx prisma generate
 
+# Run the migrations to apply the schema to your database
+CMD ["npx", "prisma", "migrate", "deploy"]
 
 EXPOSE 3000
 
