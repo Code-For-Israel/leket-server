@@ -7,8 +7,7 @@ RUN npm install
 RUN apk add --update --no-cache openssl1.1-compat
 COPY . .
 
-# Remove previous prisma client installation
-RUN rm -rf node_modules/@prisma/client
+RUN npx prisma migrate dev --name "init"
 
 # Generate prisma client
 RUN npx prisma generate
