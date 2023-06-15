@@ -29,6 +29,11 @@ export class AuthService {
         });
     }
 
+    async checkDb() {
+        const fields = await this.prisma.field.findMany();
+        return fields.length;
+    }
+
     async login(username: string, password: string): Promise<{ accessToken: string }> {
         // Find the user with the provided username
         const user = await this.prisma.user.findUnique({ where: { username } });

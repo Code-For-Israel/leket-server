@@ -15,12 +15,17 @@
                 }
             ],
             "essential": true,
-            "environment": [],
+            "environment": [
+			  {
+				"name": "DATABASE_URL",
+				"value": "postgresql://postgres:CK1Usprm9qC662tBve4R@leket-israel-database.chsagdvhbyzn.us-east-1.rds.amazonaws.com:5432/leket-israel-database"
+			  },
+			  {
+				"name": "JWT_SECRET",
+				"value": "iloveleketmorethananythingelse"
+			  }
+			],
             "environmentFiles": [
-                {
-                    "value": "arn:aws:s3:::leket-israel/leket-israel-backend/.env",
-                    "type": "s3"
-                }
             ],
             "mountPoints": [],
             "volumesFrom": [],
