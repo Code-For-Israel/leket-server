@@ -1,18 +1,13 @@
-import { Injectable } from '@nestjs/common';
-import { CreateFieldDto } from './dto/create-field.dto';
-import { UpdateFieldDto } from './dto/update-field.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { HistoriesService } from '../histories/histories.service';
-import { Field, Prisma } from '@prisma/client';
-import { Point, Polygon } from 'geojson';
-import { _ } from 'lodash';
-import { FieldStatus } from '@prisma/client';
-import {
-  FieldAndGeometry,
-  FieldGeometry,
-  FieldIdsIntersectionsPrisma,
-} from './field-types';
-import { FilterFieldDto } from './dto/filter-field.dto';
+import {Injectable} from '@nestjs/common';
+import {CreateFieldDto} from './dto/create-field.dto';
+import {UpdateFieldDto} from './dto/update-field.dto';
+import {PrismaService} from 'src/prisma/prisma.service';
+import {HistoriesService} from '../histories/histories.service';
+import {Field, FieldStatus, Prisma} from '@prisma/client';
+import {Point, Polygon} from 'geojson';
+import {_} from 'lodash';
+import {FieldAndGeometry, FieldGeometry, FieldIdsIntersectionsPrisma,} from './field-types';
+import {FilterFieldDto} from './dto/filter-field.dto';
 
 @Injectable()
 export class FieldsService {
