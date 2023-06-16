@@ -21,6 +21,7 @@ export class AuthController {
     @ApiResponse({ status: 200, description: 'User successfully logged in' })
     @Post('login')
     async login(@Body() createUserDto: UserDto): Promise<{ accessToken: string }> {
+        console.log("authController");
         const { username, password } = createUserDto;
         return this.authService.login(username, password);
     }
