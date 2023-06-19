@@ -11,9 +11,10 @@ import {
 import { MissionsService } from './missions.service';
 import { CreateMissionDto } from './dto/create-mission.dto';
 import { UpdateMissionDto } from './dto/update-mission.dto';
-import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import {ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags} from '@nestjs/swagger';
 import { MissionEntity } from './entities/mission.entity';
 
+@ApiBearerAuth()
 @Controller('missions')
 @ApiTags('Missions')
 export class MissionsController {

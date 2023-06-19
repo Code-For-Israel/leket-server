@@ -11,10 +11,11 @@ import {
 import { SatellitesService } from './satellites.service';
 import { CreateSatelliteDto } from './dto/create-satellite.dto';
 import { UpdateSatelliteDto } from './dto/update-satellite.dto';
-import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import {ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags} from '@nestjs/swagger';
 import { SatelliteEntity } from './entities/satellite.entity';
 
 @Controller('satellites')
+@ApiBearerAuth()
 @ApiTags('Satellites')
 export class SatellitesController {
   constructor(private readonly satellitesService: SatellitesService) {}

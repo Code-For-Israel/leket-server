@@ -13,10 +13,11 @@ import { FieldsService } from './fields.service';
 import { CreateFieldDto } from './dto/create-field.dto';
 import { UpdateFieldDto } from './dto/update-field.dto';
 import { FilterFieldDto } from './dto/filter-field.dto';
-import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import {ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags} from '@nestjs/swagger';
 import { FieldEntity } from './entities/field.entity';
 import { FilterFieldByPointDto } from './dto/filter-field-point.dto';
 
+@ApiBearerAuth()
 @Controller('fields')
 @ApiTags('Fields')
 export class FieldsController {
