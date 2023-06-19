@@ -9,6 +9,7 @@ async function bootstrap() {
     .setTitle('Leket-Server')
     .setDescription('Leket fields manager server')
     .setVersion('0.1')
+    .addBearerAuth() // <-- Add this line to enable bearer token authentication
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
