@@ -35,6 +35,10 @@ export class CreateFieldDto {
   @IsEnum(Region)
   region: Region;
 
+  @ApiProperty({ required: false })
+  @IsOptional()
+  sentinel_id: string;
+
   @ApiProperty()
   @IsNotEmpty()
   @IsEnum(Familiarity)
