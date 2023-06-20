@@ -14,6 +14,8 @@ COPY . .
 # Generate Prisma Client
 RUN npx prisma generate
 
+RUN npx prisma migrate deploy
+
 EXPOSE 3000
 
 # Run the migrations to apply the schema to your database

@@ -39,6 +39,9 @@ export class FieldEntity implements Field {
   latest_satelite_metric: number;
 
   @ApiProperty()
+  latest_satelite_date: Date | null;
+
+  @ApiProperty()
   latest_attractiveness_metric: number;
 
   @ApiProperty()

@@ -64,6 +64,11 @@ export class CreateFieldDto {
   latest_satelite_metric?: number;
 
   @ApiProperty({ required: false })
+  @IsDate()
+  @IsOptional()
+  latest_satelite_date: Date;
+
+  @ApiProperty({ required: false })
   @IsNumber()
   @IsOptional()
   latest_attractiveness_metric?: number;

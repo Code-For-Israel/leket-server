@@ -140,6 +140,7 @@ model Field {
   familiarity_desc             String?
   sentinel_id                  String?
   latest_satelite_metric       Float?
+  latest_satelite_date         DateTime?
   latest_attractiveness_metric Float?
   category                     FieldCategory?
   status                       FieldStatus
