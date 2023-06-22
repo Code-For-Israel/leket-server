@@ -1,55 +1,49 @@
 {
-    "family": "leket-israel-backend",
-    "containerDefinitions": [
-        {
-            "name": "backend",
-            "image": "152203247831.dkr.ecr.us-east-1.amazonaws.com/leket-israel-backend:leket-israel-backend-5260178904",
-            "cpu": 0,
-            "portMappings": [
-                {
-                    "name": "backend-3000-tcp",
-                    "containerPort": 3000,
-                    "hostPort": 3000,
-                    "protocol": "tcp",
-                    "appProtocol": "http"
-                }
-            ],
-            "essential": true,
-            "environment": [
-			  {
-				"name": "DATABASE_URL",
-				"value": "postgresql://postgres:CK1Usprm9qC662tBve4R@leket-israel-database.chsagdvhbyzn.us-east-1.rds.amazonaws.com:5432/leket-israel-database"
-			  },
-			  {
-				"name": "JWT_SECRET",
-				"value": "iloveleketmorethananythingelse"
-			  }
-			],
-            "environmentFiles": [
-            ],
-            "mountPoints": [],
-            "volumesFrom": [],
-            "logConfiguration": {
-                "logDriver": "awslogs",
-                "options": {
-                    "awslogs-create-group": "true",
-                    "awslogs-group": "/ecs/leket-israel-backend",
-                    "awslogs-region": "us-east-1",
-                    "awslogs-stream-prefix": "ecs"
-                }
-            }
-        }
-    ],
-    "taskRoleArn": "arn:aws:iam::152203247831:role/ecsTaskExecutionRole",
-    "executionRoleArn": "arn:aws:iam::152203247831:role/ecsTaskExecutionRole",
-    "networkMode": "awsvpc",
-    "requiresCompatibilities": [
-        "FARGATE"
-    ],
-    "cpu": "2048",
-    "memory": "4096",
-    "runtimePlatform": {
-        "cpuArchitecture": "X86_64",
-        "operatingSystemFamily": "LINUX"
-    }
+  "family": "leket-israel-backend",
+  "containerDefinitions": [
+	{
+	  "name": "backend",
+	  "image": "152203247831.dkr.ecr.us-east-1.amazonaws.com/leket-israel-backend:leket-israel-backend-5260178904",
+	  "cpu": 0,
+	  "portMappings": [
+		{
+		  "name": "backend-3000-tcp",
+		  "containerPort": 3000,
+		  "hostPort": 3000,
+		  "protocol": "tcp",
+		  "appProtocol": "http"
+		}
+	  ],
+	  "essential": true,
+	  "environmentFiles": [
+		{
+		  "value": "arn:aws:s3:::leket-israel/leket-israel-backend/.env",
+		  "type": "s3"
+		}
+	  ],
+	  "mountPoints": [],
+	  "volumesFrom": [],
+	  "logConfiguration": {
+		"logDriver": "awslogs",
+		"options": {
+		  "awslogs-create-group": "true",
+		  "awslogs-group": "/ecs/leket-israel-backend",
+		  "awslogs-region": "us-east-1",
+		  "awslogs-stream-prefix": "ecs"
+		}
+	  }
+	}
+  ],
+  "taskRoleArn": "arn:aws:iam::152203247831:role/ecsTaskExecutionRole",
+  "executionRoleArn": "arn:aws:iam::152203247831:role/ecsTaskExecutionRole",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": [
+	"FARGATE"
+  ],
+  "cpu": "2048",
+  "memory": "4096",
+  "runtimePlatform": {
+	"cpuArchitecture": "X86_64",
+	"operatingSystemFamily": "LINUX"
+  }
 }
