@@ -34,7 +34,13 @@ export class FieldsController {
 
   @Post('create')
   @ApiCreatedResponse({ type: FieldEntity })
-  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  @UsePipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      enableDebugMessages: true,
+    }),
+  )
   async create(@Body() createFieldDto: CreateFieldDto) {
     try {
       return this.fieldsService.create(createFieldDto);

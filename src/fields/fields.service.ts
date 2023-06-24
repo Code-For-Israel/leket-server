@@ -308,7 +308,9 @@ export class FieldsService {
       await this.historiesService.remove_by_field_id(fieldDto.id);
       console.log('Deleted histories for field id: ' + fieldDto.id);
     } catch (e) {
-      this.logger.error('Error deleting histories for field id: ' + fieldDto.id);
+      this.logger.error(
+        'Error deleting histories for field id: ' + fieldDto.id,
+      );
     }
   }
 

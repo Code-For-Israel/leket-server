@@ -12,6 +12,7 @@ import { HistoriesModule } from './histories/histories.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtMiddleware } from './jwt.middleware';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { JwtMiddleware } from './jwt.middleware';
     MarketsModule,
     MissionsModule,
     HistoriesModule,
+    ScheduleModule.forRoot(),
     AuthModule,
   ],
   controllers: [AppController],

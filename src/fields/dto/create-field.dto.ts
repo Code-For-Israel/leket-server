@@ -84,17 +84,14 @@ export class CreateFieldDto {
   status: FieldStatus;
 
   @ApiProperty({ required: false })
-  @IsDate()
   @IsOptional()
   status_date: Date;
 
   @ApiProperty({ required: false })
-  @IsDate()
   @IsOptional()
   delay_date: Date;
 
   @ApiProperty({ required: false })
-  @IsDate()
   @IsOptional()
   created_date: Date;
 }
