@@ -9,6 +9,7 @@ import {
   Product,
   Region,
 } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 import { CreateFieldDto } from '../src/fields/dto/create-field.dto';
 
 const fs = require('fs');
@@ -29,7 +30,7 @@ const getField = (index): CreateFieldDto => {
     region: chooseRandomlyFromEnum(Region),
     farmer_id: Math.round(Math.random() * 100000).toString(),
     familiarity: chooseRandomlyFromEnum(Familiarity),
-    latest_satelite_metric: Math.round(Math.random() * 100) / 100,
+    latest_satellite_metric: Math.round(Math.random() * 100) / 100,
     latest_attractiveness_metric: Math.round(Math.random() * 100) / 100,
     category: chooseRandomlyFromEnum(FieldCategory),
     status: chooseRandomlyFromEnum(FieldStatus),
@@ -97,7 +98,7 @@ console.log("enter");
         // return results;
     })
     .on('error', (error) => {
-      console.error('Error reading CSV file:', error);
+      this.logger.error('Error reading CSV file:', error);
     })
   // console.log("Exit. results=", results.length);
   //   return results;*/
@@ -118,16 +119,25 @@ function getPolygonCenter(polygon: number[][]) {
 async function insertRandomFields(polygons: any[]) {
   let polygon;
   let point;
-  for (let i = 0; i < polygons.length ; i++) {
+  for (let i = 0; i < polygons.length; i++) {
     const field = await prisma.field.create({ data: getField(i) });
 
     polygon = JSON.parse(polygons[i]);
     point = getPolygonCenter(polygon.coordinates[0]);
-    // point = createRandomPoint();
 
     await prisma.$queryRaw(
       Prisma.sql`INSERT INTO "Geometry" (field_id, polygon, point) VALUES (${field.id}, ST_GeomFromGeoJSON(${polygon}), ST_GeomFromGeoJSON(${point}));`,
     );
+
+    const historyUpdateDto = {
+      field_id: field.id,
+      product_name: field.product_name,
+      farmer_id: field.farmer_id,
+    };
+
+    await prisma.history.create({
+      data: historyUpdateDto,
+    });
   }
 }
 
@@ -143,9 +153,24 @@ async function insert5FieldsRealPolygons() {
   }
 }
 
+async function createUser() {
+  // Hash the password before saving it
+  const currentUser = await prisma.user.findUnique({
+    where: { username: 'leket' },
+  });
+  if (currentUser) {
+    return;
+  }
+  const hashedPassword = await bcrypt.hash('leket', 10);
+  await prisma.user.create({
+    data: { username: 'leket', password: hashedPassword },
+  });
+}
+
 async function main() {
   const polygons = await readDataFromCsv();
   await insertRandomFields(polygons);
+  await createUser();
   // await insert5FieldsRealPolygons();
 }
 

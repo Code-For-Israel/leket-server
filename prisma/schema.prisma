@@ -117,10 +117,10 @@ enum Product {
 }
 
 model User {
-  id            Int      @id @default(autoincrement())
-  username      String   @unique
-  password      String
-  created_date  DateTime @default(now())
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  password     String
+  created_date DateTime @default(now())
 }
 
 model Geometry {
@@ -139,8 +139,8 @@ model Field {
   familiarity                  Familiarity
   familiarity_desc             String?
   sentinel_id                  String?
-  latest_satelite_metric       Float?
-  latest_satelite_date         DateTime?
+  latest_satellite_metric      Float?
+  latest_satellite_date        DateTime?
   latest_attractiveness_metric Float?
   category                     FieldCategory?
   status                       FieldStatus
@@ -153,21 +153,25 @@ model Field {
   Attractivenesses             Attractiveness[]
   Geometry                     Geometry?
 
-  @@index(fields: [latest_satelite_metric, latest_attractiveness_metric, status_date], type: BTree)
-  @@index(fields: [latest_attractiveness_metric, latest_satelite_metric, status_date], type: BTree)
-  @@index(fields: [status_date, latest_satelite_metric, latest_attractiveness_metric], type: BTree)
-  @@index(fields: [status_date, latest_attractiveness_metric, latest_satelite_metric], type: BTree)
-  @@index(fields: [latest_satelite_metric, status_date, latest_attractiveness_metric], type: BTree)
+  @@index(fields: [latest_satellite_metric, latest_attractiveness_metric, status_date], type: BTree)
+  @@index(fields: [latest_attractiveness_metric, latest_satellite_metric, status_date], type: BTree)
+  @@index(fields: [status_date, latest_satellite_metric, latest_attractiveness_metric], type: BTree)
+  @@index(fields: [status_date, latest_attractiveness_metric, latest_satellite_metric], type: BTree)
+  @@index(fields: [latest_satellite_metric, status_date, latest_attractiveness_metric], type: BTree)
   @@index(fields: [name], type: SpGist)
 }
 
 model Satellite {
-  id         Int      @id @default(autoincrement())
-  date       DateTime @default(now())
-  field      Field    @relation(fields: [field_id], references: [id])
-  field_id   Int
-  statistics Json
-  like       Boolean
+  id          Int      @id @default(autoincrement())
+  date        DateTime @default(now())
+  field       Field    @relation(fields: [field_id], references: [id])
+  field_id    Int
+  ndvi_max    Float?
+  ndvi_min    Float?
+  ndvi_std    Float?
+  ndvi_mean   Float
+  ndvi_median Float?
+  like        Boolean?
 
   @@index(fields: [field_id], type: Hash)
 }
@@ -181,7 +185,7 @@ model Attractiveness {
   market_score    Float
   satellite_score Float
   average_score   Float
-  like            Boolean
+  like            Boolean?
 }
 
 model Market {

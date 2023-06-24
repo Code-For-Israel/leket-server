@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Logger,
   Param,
   Patch,
   Post,
@@ -13,7 +14,12 @@ import { FieldsService } from './fields.service';
 import { CreateFieldDto } from './dto/create-field.dto';
 import { UpdateFieldDto } from './dto/update-field.dto';
 import { FilterFieldDto } from './dto/filter-field.dto';
-import {ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags} from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { FieldEntity } from './entities/field.entity';
 import { FilterFieldByPointDto } from './dto/filter-field-point.dto';
 
@@ -21,7 +27,10 @@ import { FilterFieldByPointDto } from './dto/filter-field-point.dto';
 @Controller('fields')
 @ApiTags('Fields')
 export class FieldsController {
-  constructor(private readonly fieldsService: FieldsService) {}
+  constructor(
+    private readonly fieldsService: FieldsService,
+    private readonly logger: Logger = new Logger(FieldsController.name),
+  ) {}
 
   @Post('create')
   @ApiCreatedResponse({ type: FieldEntity })
@@ -30,7 +39,7 @@ export class FieldsController {
     try {
       return this.fieldsService.create(createFieldDto);
     } catch (e) {
-      console.error('Error creating field', e);
+      this.logger.error('Error creating field', e);
       throw e;
     }
   }
@@ -56,7 +65,7 @@ export class FieldsController {
       }
       return findOneRes;
     } catch (error) {
-      console.error('Error finding field by id', error);
+      this.logger.error('Error finding field by id', error);
       throw error;
     }
   }
@@ -86,7 +95,7 @@ export class FieldsController {
     try {
       return await this.fieldsService.getFieldByPoint(point);
     } catch (e) {
-      console.error('Error finding field by point', e);
+      this.logger.error('Error finding field by point', e);
       throw e;
     }
   }

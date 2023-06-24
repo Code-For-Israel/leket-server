@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { CreateSatelliteDto } from './dto/create-satellite.dto';
 import { UpdateSatelliteDto } from './dto/update-satellite.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { Satellite } from '@prisma/client';
+import { PrismaClient, Satellite } from '@prisma/client';
 import { FieldsService } from '../fields/fields.service';
 
 @Injectable()
@@ -10,18 +10,19 @@ export class SatellitesService {
   constructor(
     private prisma: PrismaService,
     private readonly fieldService: FieldsService,
+    private logger: Logger = new Logger(SatellitesService.name),
   ) {}
   async create(createSatelliteDto: CreateSatelliteDto) {
-    try {
-      const createSatelliteRes = await this.prisma.satellite.create({
-        data: createSatelliteDto,
-      });
-      const updateFieldRes = await this.updateFieldLastNdvi(createSatelliteRes); // once satellite is updated, update the field's latest_satelite_metric
-      console.log('created Satellite info:', createSatelliteRes);
-      console.log('updated field last NDVI info:', updateFieldRes);
-    } catch (e) {
-      console.error('Error creating satellite', e);
-    }
+    const satelliteRes = await this.prisma.$transaction(
+      async (transactionPrisma: PrismaClient) => {
+        const satellite = await transactionPrisma.satellite.create({
+          data: createSatelliteDto,
+        });
+        await this.updateFieldLastNdvi(satellite, transactionPrisma);
+        return satellite;
+      },
+    );
+    this.logger.log('satellite created: ', satelliteRes);
   }
 
   findAll(limit: number, offset: number) {
@@ -41,7 +42,7 @@ export class SatellitesService {
         data: updateSatelliteDto,
       });
     } catch (e) {
-      console.error('Error updating satellite', e);
+      this.logger.log('Error updating satellite', e);
     }
   }
 
@@ -49,9 +50,20 @@ export class SatellitesService {
     return this.prisma.field.delete({ where: { id } });
   }
 
-  private async updateFieldLastNdvi(satelliteRes: Satellite) {
+  private async updateFieldLastNdvi(
+    satelliteRes: Satellite,
+    prismaClient: PrismaClient = this.prisma,
+  ) {
     const fieldId = satelliteRes.field_id;
-    const updateFieldDto = { latest_satelite_metric: satelliteRes.id };
-    await this.fieldService.updateOne(fieldId, updateFieldDto);
+    const updateFieldDto = {
+      latest_satellite_metric: satelliteRes.ndvi_mean,
+      latest_satellite_date: satelliteRes.date,
+    };
+    return this.fieldService.updateOne(
+      fieldId,
+      updateFieldDto,
+      prismaClient,
+      false,
+    );
   }
 }

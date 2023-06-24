@@ -1,13 +1,17 @@
-import {Injectable} from '@nestjs/common';
-import {CreateFieldDto} from './dto/create-field.dto';
-import {UpdateFieldDto} from './dto/update-field.dto';
-import {PrismaService} from 'src/prisma/prisma.service';
-import {HistoriesService} from '../histories/histories.service';
-import {Field, FieldStatus, Prisma} from '@prisma/client';
-import {Point, Polygon} from 'geojson';
-import {_} from 'lodash';
-import {FieldAndGeometry, FieldGeometry, FieldIdsIntersectionsPrisma,} from './field-types';
-import {FilterFieldDto} from './dto/filter-field.dto';
+import { Injectable, Logger } from '@nestjs/common';
+import { CreateFieldDto } from './dto/create-field.dto';
+import { UpdateFieldDto } from './dto/update-field.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { HistoriesService } from '../histories/histories.service';
+import { Field, FieldStatus, Prisma, PrismaClient } from '@prisma/client';
+import { Point, Polygon } from 'geojson';
+import { _ } from 'lodash';
+import {
+  FieldAndGeometry,
+  FieldGeometry,
+  FieldIdsIntersectionsPrisma,
+} from './field-types';
+import { FilterFieldDto } from './dto/filter-field.dto';
 
 @Injectable()
 export class FieldsService {
@@ -17,6 +21,7 @@ export class FieldsService {
   constructor(
     private prisma: PrismaService,
     private historiesService: HistoriesService,
+    private logger: Logger = new Logger(FieldsService.name),
   ) {}
 
   async create(createFieldDto: CreateFieldDto) {
@@ -24,17 +29,31 @@ export class FieldsService {
     try {
       const { fieldGeometry, fieldWithoutGeometry } =
         this.extractGeometryFromField(createFieldDto);
-      const field = await this.prisma.field.create({
-        data: fieldWithoutGeometry,
-      });
-      console.log('Field created', field);
-      await this.createGeometryToField(field.id, fieldGeometry);
+      const field = await this.prisma.$transaction(
+        async (transactionPrisma: PrismaClient) => {
+          const field = await transactionPrisma.field.create({
+            data: fieldWithoutGeometry,
+          });
+          await this.createGeometryToField(
+            field.id,
+            fieldGeometry,
+            transactionPrisma,
+          );
+          await this.createHistoryForFieldIfRequired(
+            field,
+            createFieldDto,
+            transactionPrisma,
+          );
+          return field;
+        },
+      );
+      this.logger.log('Field created', field);
       return this.concatFieldsWithGeometry(field, fieldGeometry);
     } catch (error) {
       if (error instanceof GeometryCreationFailedError) {
-        console.error('Error creating field geometry: ', error);
+        this.logger.error('Error creating field geometry: ', error);
       } else {
-        console.error('Error creating field', error);
+        this.logger.error('Error creating field', error);
       }
       throw error;
     }
@@ -101,48 +120,91 @@ export class FieldsService {
       if (fieldGeometry) {
         return this.concatFieldsWithGeometry(field, fieldGeometry);
       }
-      return this.getGeometryForField(field);
+      return this.getFieldWithGeometry(field);
     }
     return {};
   }
 
-  async updateOne(id: number, updateFieldDto: UpdateFieldDto) {
+  async updateOne(
+    id: number,
+    updateFieldDto: UpdateFieldDto,
+    prismaClient: PrismaClient = this.prisma,
+    performOwnTransaction = true,
+  ) {
     try {
       const { fieldGeometry, fieldWithoutGeometry } =
         this.extractGeometryFromField(updateFieldDto);
       this.prepareToStatusUpdateIfRequired(updateFieldDto);
-      return await this.prisma.$transaction(async (transactionPrisma) => {
-        const updateFieldRes = await transactionPrisma.field.update({
-          where: { id },
-          data: fieldWithoutGeometry,
-        });
-        const fieldGeometryRes = await this.updateGeometryToField(
-          id,
+      const [fieldGeometryRes, updateFieldRes] =
+        await this.updateOneTransaction(
+          performOwnTransaction,
+          prismaClient,
           fieldGeometry,
-        );
-        await this.createHistoryForFieldIfRequired(
-          updateFieldRes,
+          fieldWithoutGeometry,
+          id,
           updateFieldDto,
         );
-        if (fieldGeometryRes?.length > 0) {
-          return this.concatFieldsWithGeometry(
-            updateFieldRes,
-            fieldGeometryRes[0],
-          );
-        } else {
-          return this.getGeometryForField(updateFieldRes);
-        }
-      });
+
+      if (fieldGeometryRes?.length > 0) {
+        return this.concatFieldsWithGeometry(
+          updateFieldRes,
+          fieldGeometryRes[0],
+        );
+      } else {
+        return this.getFieldWithGeometry(updateFieldRes);
+      }
     } catch (error) {
       console.log('Error updating Field', error);
       throw error;
     }
   }
 
+  async updateOneTransaction(
+    performOwnTransaction: boolean,
+    prismaClient: PrismaClient,
+    fieldGeometry: FieldGeometry,
+    fieldWithoutGeometry: Field,
+    id: number,
+    updateFieldDto: UpdateFieldDto,
+  ) {
+    if (performOwnTransaction) {
+      return this.prisma.$transaction(
+        async (transactionPrisma: PrismaClient) => {
+          const [updateFieldRes, fieldGeometryRes] = await Promise.all([
+            transactionPrisma.field.update({
+              where: { id },
+              data: fieldWithoutGeometry,
+            }),
+            this.updateGeometryToField(id, fieldGeometry, transactionPrisma),
+          ]);
+          await this.createHistoryForFieldIfRequired(
+            updateFieldRes,
+            updateFieldDto,
+            transactionPrisma,
+          );
+          return [fieldGeometryRes, updateFieldRes];
+        },
+      );
+    } else {
+      const [updateFieldRes, fieldGeometryRes] = await Promise.all([
+        prismaClient.field.update({
+          where: { id },
+          data: fieldWithoutGeometry,
+        }),
+        this.updateGeometryToField(id, fieldGeometry, prismaClient),
+      ]);
+      await this.createHistoryForFieldIfRequired(
+        updateFieldRes,
+        updateFieldDto,
+        prismaClient,
+      );
+      return [fieldGeometryRes, updateFieldRes];
+    }
+  }
+
   async remove(id: number) {
     const removeFieldRes = await this.prisma.field.delete({ where: { id } });
-    await this.deleteHistoriesForField(removeFieldRes);
-    return 'ok';
+    return this.deleteHistoriesForField(removeFieldRes);
   }
 
   async getFieldByPoint(point: Point): Promise<Field | any> {
@@ -225,6 +287,7 @@ export class FieldsService {
   private async createHistoryForFieldIfRequired(
     fieldDto: Field,
     updateFieldDto: UpdateFieldDto,
+    prismaClient: PrismaClient = this.prisma,
   ) {
     if (updateFieldDto.product_name || updateFieldDto.farmer_id) {
       const historyUpdateDto = {
@@ -234,6 +297,7 @@ export class FieldsService {
       };
       const historyCreateRes = await this.historiesService.create(
         historyUpdateDto,
+        prismaClient,
       );
       console.log('History created for field', historyCreateRes);
     }
@@ -244,25 +308,26 @@ export class FieldsService {
       await this.historiesService.remove_by_field_id(fieldDto.id);
       console.log('Deleted histories for field id: ' + fieldDto.id);
     } catch (e) {
-      console.error('Error deleting histories for field id: ' + fieldDto.id);
+      this.logger.error('Error deleting histories for field id: ' + fieldDto.id);
     }
   }
 
   private async createGeometryToField(
     field_id: number,
     fieldGeometry: FieldGeometry,
+    prismaClient: PrismaClient = this.prisma,
   ): Promise<any> {
     try {
       if (fieldGeometry.polygon && fieldGeometry.point) {
-        await this.prisma.$queryRaw(
+        await prismaClient.$queryRaw(
           Prisma.sql`INSERT INTO "Geometry" (field_id, polygon, point) VALUES (${field_id}, ST_GeomFromGeoJSON(${fieldGeometry.polygon}), ST_GeomFromGeoJSON(${fieldGeometry.point}));`,
         );
       } else if (fieldGeometry.polygon) {
-        await this.prisma.$queryRaw(
+        await prismaClient.$queryRaw(
           Prisma.sql`INSERT INTO "Geometry" (field_id, polygon) VALUES (${field_id}, ST_GeomFromGeoJSON(${fieldGeometry.polygon}));`,
         );
       } else if (fieldGeometry.point) {
-        await this.prisma.$queryRaw(
+        await prismaClient.$queryRaw(
           Prisma.sql`INSERT INTO "Geometry" (field_id, point) VALUES (${field_id}, ST_GeomFromGeoJSON(${fieldGeometry.point}));`,
         );
       }
@@ -276,18 +341,19 @@ export class FieldsService {
   private async updateGeometryToField(
     field_id: number,
     fieldGeometry: FieldGeometry,
+    prismaClient: PrismaClient = this.prisma,
   ): Promise<any> {
     try {
       if (fieldGeometry.polygon && fieldGeometry.point) {
-        return this.prisma.$queryRaw(
+        return prismaClient.$queryRaw(
           Prisma.sql`UPDATE "Geometry" SET polygon = ST_GeomFromGeoJSON(${fieldGeometry.polygon}), point = ST_GeomFromGeoJSON(${fieldGeometry.point}) WHERE field_id = ${field_id} returning field_id, ST_AsGeoJSON(polygon) as polygon, ST_AsGeoJSON(point) as point;`,
         );
       } else if (fieldGeometry.polygon) {
-        return this.prisma.$queryRaw(
+        return prismaClient.$queryRaw(
           Prisma.sql`UPDATE "Geometry" SET polygon = ST_GeomFromGeoJSON(${fieldGeometry.polygon}) WHERE field_id = ${field_id} returning field_id, ST_AsGeoJSON(polygon) as polygon, ST_AsGeoJSON(point) as point;`,
         );
       } else if (fieldGeometry.point) {
-        return this.prisma.$queryRaw(
+        return prismaClient.$queryRaw(
           Prisma.sql`UPDATE "Geometry" SET point = ST_GeomFromGeoJSON(${fieldGeometry.point}) WHERE field_id = ${field_id} returning field_id, ST_AsGeoJSON(polygon) as polygon, ST_AsGeoJSON(point) as point;`,
         );
       }
@@ -298,7 +364,7 @@ export class FieldsService {
     }
   }
 
-  private async getGeometryForField(field: Field): Promise<Field> {
+  private async getFieldWithGeometry(field: Field): Promise<Field> {
     try {
       const fieldId = field.id;
       const fieldGeometryRes: any[] = await this.prisma.$queryRaw(
@@ -310,7 +376,7 @@ export class FieldsService {
       }
       return this.concatFieldsWithGeometry(field, fieldGeometryRes[0]);
     } catch (e) {
-      console.error('Error getting geometry for field id: ' + field.id);
+      this.logger.error('Error getting geometry for field id: ' + field.id);
       throw e;
     }
   }
@@ -330,7 +396,7 @@ export class FieldsService {
   private async getFieldsGeometry(fields: Field[]): Promise<Field[]> {
     return await Promise.all(
       fields.map(async (field) => {
-        return this.getGeometryForField(field);
+        return this.getFieldWithGeometry(field);
       }),
     );
   }

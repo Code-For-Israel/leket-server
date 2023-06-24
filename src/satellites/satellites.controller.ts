@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Logger,
   Param,
   Patch,
   Post,
@@ -11,14 +12,22 @@ import {
 import { SatellitesService } from './satellites.service';
 import { CreateSatelliteDto } from './dto/create-satellite.dto';
 import { UpdateSatelliteDto } from './dto/update-satellite.dto';
-import {ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags} from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { SatelliteEntity } from './entities/satellite.entity';
 
 @Controller('satellites')
 @ApiBearerAuth()
 @ApiTags('Satellites')
 export class SatellitesController {
-  constructor(private readonly satellitesService: SatellitesService) {}
+  constructor(
+    private readonly satellitesService: SatellitesService,
+    private logger: Logger = new Logger(SatellitesController.name),
+  ) {}
 
   @Post()
   @ApiCreatedResponse({ type: SatelliteEntity })
@@ -46,7 +55,7 @@ export class SatellitesController {
     try {
       return this.satellitesService.update(+id, updateSatelliteDto);
     } catch (e) {
-      console.error('Error updating satellite', e);
+      this.logger.error('Error updating satellite', e);
     }
   }
 

@@ -36,10 +36,10 @@ export class FieldEntity implements Field {
   sentinel_id: string;
 
   @ApiProperty()
-  latest_satelite_metric: number;
+  latest_satellite_metric: number;
 
   @ApiProperty()
-  latest_satelite_date: Date | null;
+  latest_satellite_date: Date | null;
 
   @ApiProperty()
   latest_attractiveness_metric: number;

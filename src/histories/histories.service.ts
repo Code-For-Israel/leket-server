@@ -2,12 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { CreateHistoryDto } from './dto/create-history.dto';
 import { UpdateHistoryDto } from './dto/update-history.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { PrismaClient } from '@prisma/client';
 
 @Injectable()
 export class HistoriesService {
   constructor(private prisma: PrismaService) {}
-  create(createHistoryDto: CreateHistoryDto) {
-    return this.prisma.history.create({ data: createHistoryDto });
+  create(
+    createHistoryDto: CreateHistoryDto,
+    prismaClient: PrismaClient = this.prisma,
+  ) {
+    return prismaClient.history.create({ data: createHistoryDto });
   }
 
   findAll(limit: number, offset: number) {

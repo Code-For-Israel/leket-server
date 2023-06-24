@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { SatellitesService } from './satellites.service';
 import { SatellitesController } from './satellites.controller';
 import { PrismaModule } from '../prisma/prisma.module';
@@ -7,7 +7,7 @@ import { HistoriesService } from '../histories/histories.service';
 
 @Module({
   controllers: [SatellitesController],
-  providers: [SatellitesService, FieldsService, HistoriesService],
+  providers: [SatellitesService, FieldsService, HistoriesService, Logger],
   imports: [PrismaModule],
 })
 export class SatellitesModule {}
