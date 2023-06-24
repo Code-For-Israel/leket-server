@@ -25,7 +25,6 @@ export class FieldsService {
   ) {}
 
   async create(createFieldDto: CreateFieldDto) {
-    // TODO: transact history creation
     try {
       const { fieldGeometry, fieldWithoutGeometry } =
         this.extractGeometryFromField(createFieldDto);

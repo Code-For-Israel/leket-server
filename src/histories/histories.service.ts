@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { CreateHistoryDto } from './dto/create-history.dto';
 import { UpdateHistoryDto } from './dto/update-history.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -6,6 +6,8 @@ import { PrismaClient } from '@prisma/client';
 
 @Injectable()
 export class HistoriesService {
+  private readonly limit = 20;
+  private readonly logger: Logger = new Logger(HistoriesService.name);
   constructor(private prisma: PrismaService) {}
   create(
     createHistoryDto: CreateHistoryDto,
@@ -14,8 +16,16 @@ export class HistoriesService {
     return prismaClient.history.create({ data: createHistoryDto });
   }
 
-  findAll(limit: number, offset: number) {
-    return this.prisma.history.findMany({ take: +limit, skip: +offset });
+  async findRecent(fieldId: number) {
+    const histories = await this.prisma.history.findMany({
+      where: { field_id: fieldId },
+      take: this.limit,
+    });
+    this.logger.log(
+      'Found recent histories for field id ' + fieldId,
+      histories,
+    );
+    return histories;
   }
 
   findOne(id: number) {
