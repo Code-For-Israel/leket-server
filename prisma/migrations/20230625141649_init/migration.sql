@@ -45,7 +45,8 @@ CREATE TABLE "Field" (
     "familiarity" "Familiarity" NOT NULL,
     "familiarity_desc" TEXT,
     "sentinel_id" TEXT,
-    "latest_satelite_metric" DOUBLE PRECISION,
+    "latest_satellite_metric" DOUBLE PRECISION,
+    "latest_satellite_date" TIMESTAMP(3),
     "latest_attractiveness_metric" DOUBLE PRECISION,
     "category" "FieldCategory",
     "status" "FieldStatus" NOT NULL,
@@ -61,8 +62,12 @@ CREATE TABLE "Satellite" (
     "id" SERIAL NOT NULL,
     "date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "field_id" INTEGER NOT NULL,
-    "statistics" JSONB NOT NULL,
-    "like" BOOLEAN NOT NULL,
+    "ndvi_max" DOUBLE PRECISION,
+    "ndvi_min" DOUBLE PRECISION,
+    "ndvi_std" DOUBLE PRECISION,
+    "ndvi_mean" DOUBLE PRECISION NOT NULL,
+    "ndvi_median" DOUBLE PRECISION,
+    "like" BOOLEAN,
 
     CONSTRAINT "Satellite_pkey" PRIMARY KEY ("id")
 );
@@ -76,7 +81,7 @@ CREATE TABLE "Attractiveness" (
     "market_score" DOUBLE PRECISION NOT NULL,
     "satellite_score" DOUBLE PRECISION NOT NULL,
     "average_score" DOUBLE PRECISION NOT NULL,
-    "like" BOOLEAN NOT NULL,
+    "like" BOOLEAN,
 
     CONSTRAINT "Attractiveness_pkey" PRIMARY KEY ("id")
 );
@@ -120,19 +125,22 @@ CREATE TABLE "History" (
 CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
 
 -- CreateIndex
-CREATE INDEX "Field_latest_satelite_metric_latest_attractiveness_metric_s_idx" ON "Field"("latest_satelite_metric", "latest_attractiveness_metric", "status_date");
+CREATE INDEX "Field_latest_satellite_metric_latest_attractiveness_metric__idx" ON "Field"("latest_satellite_metric", "latest_attractiveness_metric", "status_date");
 
 -- CreateIndex
-CREATE INDEX "Field_latest_attractiveness_metric_latest_satelite_metric_s_idx" ON "Field"("latest_attractiveness_metric", "latest_satelite_metric", "status_date");
+CREATE INDEX "Field_latest_attractiveness_metric_latest_satellite_metric__idx" ON "Field"("latest_attractiveness_metric", "latest_satellite_metric", "status_date");
 
 -- CreateIndex
-CREATE INDEX "Field_status_date_latest_satelite_metric_latest_attractiven_idx" ON "Field"("status_date", "latest_satelite_metric", "latest_attractiveness_metric");
+CREATE INDEX "Field_status_date_latest_satellite_metric_latest_attractive_idx" ON "Field"("status_date", "latest_satellite_metric", "latest_attractiveness_metric");
 
 -- CreateIndex
-CREATE INDEX "Field_status_date_latest_attractiveness_metric_latest_satel_idx" ON "Field"("status_date", "latest_attractiveness_metric", "latest_satelite_metric");
+CREATE INDEX "Field_status_date_latest_attractiveness_metric_latest_satel_idx" ON "Field"("status_date", "latest_attractiveness_metric", "latest_satellite_metric");
 
 -- CreateIndex
-CREATE INDEX "Field_latest_satelite_metric_status_date_latest_attractiven_idx" ON "Field"("latest_satelite_metric", "status_date", "latest_attractiveness_metric");
+CREATE INDEX "Field_latest_satellite_metric_status_date_latest_attractive_idx" ON "Field"("latest_satellite_metric", "status_date", "latest_attractiveness_metric");
+
+-- CreateIndex
+CREATE INDEX "Field_delay_date_status_idx" ON "Field"("delay_date", "status");
 
 -- CreateIndex
 CREATE INDEX "Field_name_idx" ON "Field" USING SPGIST ("name");
