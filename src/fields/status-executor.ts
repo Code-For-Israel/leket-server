@@ -14,7 +14,7 @@ export class TasksService {
       'Executor started - looking for paused fields that need to be resumed',
     );
     const delayDatePassedFields = await this.prisma.field.findMany({
-      where: { delay_date: { lte: new Date() } },
+      where: { delay_date: { lte: new Date() }, status: FieldStatus.ON_HOLD },
       select: { id: true, delay_date: true },
     });
     if (delayDatePassedFields.length > 0) {
