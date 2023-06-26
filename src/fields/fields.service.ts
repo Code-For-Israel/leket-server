@@ -385,8 +385,9 @@ export class FieldsService {
   private prepareToStatusUpdateIfRequired(updateFieldDto: UpdateFieldDto) {
     if (updateFieldDto.status) {
       updateFieldDto.status_date = new Date();
-      updateFieldDto.delay_date =
-        updateFieldDto.status === FieldStatus.ON_HOLD ? new Date() : null;
+      if (updateFieldDto.status !== FieldStatus.ON_HOLD) {
+        updateFieldDto.delay_date = null;
+      }
     }
   }
 
