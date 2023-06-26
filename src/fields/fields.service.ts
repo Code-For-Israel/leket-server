@@ -133,7 +133,7 @@ export class FieldsService {
     try {
       const { fieldGeometry, fieldWithoutGeometry } =
         this.extractGeometryFromField(updateFieldDto);
-      this.prepareToStatusUpdateIfRequired(updateFieldDto);
+      this.prepareToStatusUpdateIfRequired(fieldWithoutGeometry);
       const [fieldGeometryRes, updateFieldRes] =
         await this.updateOneTransaction(
           performOwnTransaction,
