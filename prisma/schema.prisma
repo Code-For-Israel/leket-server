@@ -43,6 +43,7 @@ enum Region {
 }
 
 enum Product {
+  UNALLOCATED
   AVOCADO
   WATERMELON
   PECAN
@@ -96,6 +97,8 @@ enum Product {
   PAPAYA
   SABRA
   RADISH
+  RADISHES
+  MELON
   COLORBY
   KIWI
   ZUCCHINI
