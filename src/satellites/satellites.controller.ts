@@ -13,12 +13,13 @@ import { SatellitesService } from './satellites.service';
 import { CreateSatelliteDto } from './dto/create-satellite.dto';
 import { UpdateSatelliteDto } from './dto/update-satellite.dto';
 import {
-  ApiBearerAuth,
+  ApiBearerAuth, ApiBody,
   ApiCreatedResponse,
   ApiOkResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+  ApiTags
+} from "@nestjs/swagger";
 import { SatelliteEntity } from './entities/satellite.entity';
+import { FieldEntity } from "../fields/entities/field.entity";
 
 @Controller('satellites')
 @ApiBearerAuth()
@@ -29,10 +30,16 @@ export class SatellitesController {
     private logger: Logger = new Logger(SatellitesController.name),
   ) {}
 
-  @Post()
+  @Post('create')
   @ApiCreatedResponse({ type: SatelliteEntity })
   create(@Body() createSatelliteDto: CreateSatelliteDto) {
     return this.satellitesService.create(createSatelliteDto);
+  }
+
+  @Post('create-many')
+  @ApiBody({ type: CreateSatelliteDto, isArray: true })
+  createMany(@Body() createSatelliteDtoArray: CreateSatelliteDto[]) {
+    return this.satellitesService.createMany(createSatelliteDtoArray);
   }
 
   @Get()

@@ -25,6 +25,29 @@ export class SatellitesService {
     this.logger.log('satellite created: ', satelliteRes);
   }
 
+  async createMany(createSatelliteDtoArray: CreateSatelliteDto[]) {
+    try {
+      await this.prisma.$transaction(
+        async (transactionPrisma: PrismaClient) => {
+          const satellites = await transactionPrisma.satellite.createMany({
+            data: createSatelliteDtoArray,
+          });
+          await Promise.all(
+            createSatelliteDtoArray.map((satellite) =>
+              this.updateFieldLastNdvi(satellite, transactionPrisma),
+            ),
+          );
+          return satellites;
+        },
+      );
+      this.logger.log('satellite values created');
+      return true;
+    } catch (e) {
+      this.logger.log('Error creating satellite values', e);
+      throw e;
+    }
+  }
+
   findAll(limit: number, offset: number) {
     return this.prisma.satellite.findMany({ take: +limit, skip: +offset });
   }
@@ -51,7 +74,7 @@ export class SatellitesService {
   }
 
   private async updateFieldLastNdvi(
-    satelliteRes: Satellite,
+    satelliteRes: Satellite | CreateSatelliteDto,
     prismaClient: PrismaClient = this.prisma,
   ) {
     const fieldId = satelliteRes.field_id;
