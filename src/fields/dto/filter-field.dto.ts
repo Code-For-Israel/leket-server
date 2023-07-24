@@ -26,7 +26,12 @@ export class FilterFieldDto {
   @ApiProperty()
   @IsOptional()
   @IsString()
-  prefixName: string;
+  prefixNameField: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
+  prefixNameAgricultural: string;
 
   @ApiProperty()
   @IsOptional()

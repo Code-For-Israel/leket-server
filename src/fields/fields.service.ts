@@ -31,16 +31,19 @@ export class FieldsService {
       const field = await this.prisma.$transaction(
         async (transactionPrisma: PrismaClient) => {
           const field = await transactionPrisma.field.create({
-            data: fieldWithoutGeometry,
+            data: {
+              ...fieldWithoutGeometry,
+              Histories: {
+                create: {
+                  product_name: fieldWithoutGeometry.product_name,
+                  farmer_id: fieldWithoutGeometry.farmer_id,
+                },
+              },
+            },
           });
           await this.createGeometryToField(
             field.id,
             fieldGeometry,
-            transactionPrisma,
-          );
-          await this.createHistoryForFieldIfRequired(
-            field,
-            createFieldDto,
             transactionPrisma,
           );
           return field;
@@ -61,7 +64,8 @@ export class FieldsService {
   async findAllByFilter(filters: FilterFieldDto): Promise<any> {
     console.log('fieldsService -> findAll -> Enter');
     const {
-      prefixName,
+      prefixNameField,
+      prefixNameAgricultural,
       products,
       regions,
       familiarities,
@@ -83,7 +87,8 @@ export class FieldsService {
 
     const where = await this.createWhereClause(
       intersectedFields,
-      prefixName,
+      prefixNameField,
+      prefixNameAgricultural,
       products,
       regions,
       familiarities,
@@ -219,7 +224,8 @@ export class FieldsService {
 
   private async createWhereClause(
     fieldIds,
-    prefixName,
+    prefixNameField,
+    prefixNameAgricultural,
     products,
     regions,
     familiarities,
@@ -231,14 +237,17 @@ export class FieldsService {
   ) {
     // The order of the returned object is important for the query to utilize the indexes properly
     const whereClause = {
-      name: prefixName ? { startsWith: prefixName } : undefined,
+      name: prefixNameField ? { startsWith: prefixNameField } : undefined,
+      farmer_id: prefixNameAgricultural
+        ? { startsWith: prefixNameAgricultural }
+        : undefined,
       latest_attractiveness_metric: filterAttractivenessRange
         ? {
             gte: filterAttractivenessRange?.attractivenessFrom,
             lte: filterAttractivenessRange?.attractivenessTo,
           }
         : undefined,
-      latest_satelite_metric: filterNdviRange
+      latest_satellite_metric: filterNdviRange
         ? {
             gte: filterNdviRange?.ndviFrom,
             lte: filterNdviRange?.ndviTo,
@@ -254,7 +263,7 @@ export class FieldsService {
       product_name:
         products && products.length > 0 ? { in: products } : undefined,
       region: regions && regions.length > 0 ? { in: regions } : undefined,
-      familiarities:
+      familiarity:
         familiarities && familiarities.length > 0
           ? { in: familiarities }
           : undefined,

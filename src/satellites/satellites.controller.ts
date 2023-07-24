@@ -13,13 +13,14 @@ import { SatellitesService } from './satellites.service';
 import { CreateSatelliteDto } from './dto/create-satellite.dto';
 import { UpdateSatelliteDto } from './dto/update-satellite.dto';
 import {
-  ApiBearerAuth, ApiBody,
+  ApiBearerAuth,
+  ApiBody,
   ApiCreatedResponse,
   ApiOkResponse,
-  ApiTags
-} from "@nestjs/swagger";
+  ApiTags,
+} from '@nestjs/swagger';
 import { SatelliteEntity } from './entities/satellite.entity';
-import { FieldEntity } from "../fields/entities/field.entity";
+import { FieldEntity } from '../fields/entities/field.entity';
 
 @Controller('satellites')
 @ApiBearerAuth()
