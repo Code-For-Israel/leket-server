@@ -164,6 +164,7 @@ model Field {
   @@index(fields: [latest_satellite_metric, status_date, latest_attractiveness_metric], type: BTree)
   @@index(fields: [delay_date, status], type: BTree)
   @@index(fields: [name], type: SpGist)
+  @@index(fields: [farmer_id], type: Hash)
 }
 
 model Satellite {

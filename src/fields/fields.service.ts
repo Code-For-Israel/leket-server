@@ -62,10 +62,9 @@ export class FieldsService {
   }
 
   async findAllByFilter(filters: FilterFieldDto): Promise<any> {
-    console.log('fieldsService -> findAll -> Enter');
+    this.logger.log('fieldsService -> findAll -> Enter');
     const {
-      prefixNameField,
-      prefixNameAgricultural,
+      prefixName,
       products,
       regions,
       familiarities,
@@ -87,8 +86,7 @@ export class FieldsService {
 
     const where = await this.createWhereClause(
       intersectedFields,
-      prefixNameField,
-      prefixNameAgricultural,
+      prefixName,
       products,
       regions,
       familiarities,
@@ -102,18 +100,19 @@ export class FieldsService {
     const skip = page * pageSize;
     const take = pageSize;
 
-    const [fields, fieldCount] = await Promise.all([
-      this.prisma.field.findMany({
-        where,
-        orderBy: sortBy ? { [sortBy]: sortDir ?? 'asc' } : undefined,
-        skip,
-        take,
-      }),
-      this.prisma.field.count({ where }),
-    ]);
+    const searchResult = await this.searchFields(
+      where,
+      skip,
+      take,
+      sortBy,
+      sortDir,
+    );
 
-    console.log(`fieldsService -> findAll -> found ${fields.length} fields`);
-    const fieldsWithGeo = await this.getFieldsGeometry(fields);
+    this.logger.log(
+      `fieldsService -> findAll -> found ${searchResult.fields.length} fields`,
+    );
+    const fieldsWithGeo = await this.getFieldsGeometry(searchResult.fields);
+    const fieldCount = searchResult.fieldsCount;
 
     return { fieldsWithGeo, fieldCount };
   }
@@ -158,7 +157,7 @@ export class FieldsService {
         return this.getFieldWithGeometry(updateFieldRes);
       }
     } catch (error) {
-      console.log('Error updating Field', error);
+      this.logger.log('Error updating Field', error);
       throw error;
     }
   }
@@ -222,10 +221,38 @@ export class FieldsService {
     }
   }
 
+  private async searchFields(where, skip, take, sortBy, sortDir) {
+    const filterByFarmerId = _.omit(where, ['name']);
+    const [fields, count] = await Promise.all([
+      this.prisma.field.findMany({
+        where: filterByFarmerId,
+        orderBy: sortBy ? { [sortBy]: sortDir ?? 'asc' } : undefined,
+        skip,
+        take,
+      }),
+      this.prisma.field.count({ where: filterByFarmerId }),
+    ]);
+
+    if (fields.length !== 0) {
+      return { fields, fieldsCount: count };
+    } else {
+      const filterByName = _.omit(where, ['farmer_id']);
+      const [fields, count] = await Promise.all([
+        this.prisma.field.findMany({
+          where: filterByName,
+          orderBy: sortBy ? { [sortBy]: sortDir ?? 'asc' } : undefined,
+          skip,
+          take,
+        }),
+        this.prisma.field.count({ where: filterByName }),
+      ]);
+      return { fields, fieldsCount: count };
+    }
+  }
+
   private async createWhereClause(
     fieldIds,
-    prefixNameField,
-    prefixNameAgricultural,
+    prefixName,
     products,
     regions,
     familiarities,
@@ -237,10 +264,8 @@ export class FieldsService {
   ) {
     // The order of the returned object is important for the query to utilize the indexes properly
     const whereClause = {
-      name: prefixNameField ? { startsWith: prefixNameField } : undefined,
-      farmer_id: prefixNameAgricultural
-        ? { startsWith: prefixNameAgricultural }
-        : undefined,
+      name: prefixName ? { startsWith: prefixName } : undefined,
+      farmer_id: prefixName,
       latest_attractiveness_metric: filterAttractivenessRange
         ? {
             gte: filterAttractivenessRange?.attractivenessFrom,
@@ -307,14 +332,14 @@ export class FieldsService {
         historyUpdateDto,
         prismaClient,
       );
-      console.log('History created for field', historyCreateRes);
+      this.logger.log('History created for field', historyCreateRes);
     }
   }
 
   private async deleteHistoriesForField(fieldDto: Field) {
     try {
       await this.historiesService.remove_by_field_id(fieldDto.id);
-      console.log('Deleted histories for field id: ' + fieldDto.id);
+      this.logger.log('Deleted histories for field id: ' + fieldDto.id);
     } catch (e) {
       this.logger.error(
         'Error deleting histories for field id: ' + fieldDto.id,
@@ -381,7 +406,7 @@ export class FieldsService {
         Prisma.sql`SELECT ST_AsGeoJSON(polygon) as polygon, ST_AsGeoJSON(point) as point FROM "Geometry" WHERE field_id = ${fieldId};`,
       );
       if (fieldGeometryRes.length === 0) {
-        console.warn('No geometry found for field id: ' + fieldId);
+        this.logger.warn('No geometry found for field id: ' + fieldId);
         return field;
       }
       return this.concatFieldsWithGeometry(field, fieldGeometryRes[0]);
