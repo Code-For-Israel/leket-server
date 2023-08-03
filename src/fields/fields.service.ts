@@ -262,7 +262,7 @@ export class FieldsService {
     filterAttractivenessRange,
     filterDateRange,
   ) {
-    // The order of the returned object is important for the query to utilize the indexes properly
+    // The order of the returned object is important for the query to utilize the indexes properly.
     const whereClause = {
       name: prefixName ? { startsWith: prefixName } : undefined,
       farmer_id: prefixName,
