@@ -78,11 +78,17 @@ export class FieldsController {
 
   @Patch('update-field/:id')
   @ApiOkResponse({ type: FieldEntity })
+  @UsePipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      enableDebugMessages: true,
+    }),
+  )
   async updateOne(
     @Param('id') id: string,
     @Body() updateFieldDto: UpdateFieldDto,
   ) {
-    // TODO: add filter validation
     return this.fieldsService.updateOne(+id, updateFieldDto);
   }
 

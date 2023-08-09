@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreateFieldDto } from './dto/create-field.dto';
 import { UpdateFieldDto } from './dto/update-field.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -157,6 +157,10 @@ export class FieldsService {
         return this.getFieldWithGeometry(updateFieldRes);
       }
     } catch (error) {
+      if (error.code == 'P2025') {
+        this.logger.log('Field id ' + id + 'not found');
+        throw new NotFoundException('Field id ' + id + ' not found');
+      }
       this.logger.log('Error updating Field', error);
       throw error;
     }
@@ -215,7 +219,7 @@ export class FieldsService {
       .$queryRaw`SELECT field_id, ST_AsGeoJson(polygon) as polygon, ST_AsGeoJson(point) as point FROM "Geometry" WHERE ST_Within(ST_GeomFromGeoJSON(${point}), "Geometry".polygon)`;
     if (fieldGeometry.length > 0) {
       const { field_id: fieldId, polygon, point } = fieldGeometry[0]; // field polygon is unique
-      return this.findOne(fieldId, { polygon, point });
+      return this.findOne(fieldId, { polygon, point, removeGeo: false });
     } else {
       return {};
     }
@@ -379,17 +383,31 @@ export class FieldsService {
     prismaClient: PrismaClient = this.prisma,
   ): Promise<any> {
     try {
+      if (fieldGeometry.removeGeo) {
+        return prismaClient.$queryRaw(
+          Prisma.sql`DELETE FROM "Geometry" WHERE field_id = ${field_id};`,
+        );
+      }
       if (fieldGeometry.polygon && fieldGeometry.point) {
         return prismaClient.$queryRaw(
-          Prisma.sql`UPDATE "Geometry" SET polygon = ST_GeomFromGeoJSON(${fieldGeometry.polygon}), point = ST_GeomFromGeoJSON(${fieldGeometry.point}) WHERE field_id = ${field_id} returning field_id, ST_AsGeoJSON(polygon) as polygon, ST_AsGeoJSON(point) as point;`,
+          Prisma.sql`INSERT INTO "Geometry" (field_id, polygon, point)
+            VALUES (${field_id}, ST_GeomFromGeoJSON(${fieldGeometry.polygon}), ST_GeomFromGeoJSON(${fieldGeometry.point}))
+            ON CONFLICT (field_id) DO UPDATE SET polygon = EXCLUDED.polygon, point = EXCLUDED.point
+            RETURNING field_id, ST_AsGeoJSON(polygon) as polygon, ST_AsGeoJSON(point) as point;`,
         );
       } else if (fieldGeometry.polygon) {
         return prismaClient.$queryRaw(
-          Prisma.sql`UPDATE "Geometry" SET polygon = ST_GeomFromGeoJSON(${fieldGeometry.polygon}) WHERE field_id = ${field_id} returning field_id, ST_AsGeoJSON(polygon) as polygon, ST_AsGeoJSON(point) as point;`,
+          Prisma.sql`INSERT INTO "Geometry" (field_id, polygon)
+            VALUES (${field_id}, ST_GeomFromGeoJSON(${fieldGeometry.polygon}))
+            ON CONFLICT (field_id) DO UPDATE SET polygon = EXCLUDED.polygon
+            RETURNING field_id, ST_AsGeoJSON(polygon) as polygon, ST_AsGeoJSON(point) as point;`,
         );
       } else if (fieldGeometry.point) {
         return prismaClient.$queryRaw(
-          Prisma.sql`UPDATE "Geometry" SET point = ST_GeomFromGeoJSON(${fieldGeometry.point}) WHERE field_id = ${field_id} returning field_id, ST_AsGeoJSON(polygon) as polygon, ST_AsGeoJSON(point) as point;`,
+          Prisma.sql`INSERT INTO "Geometry" (field_id, point)
+            VALUES (${field_id}, ST_GeomFromGeoJSON(${fieldGeometry.point}))
+            ON CONFLICT (field_id) DO UPDATE SET point = EXCLUDED.point
+            RETURNING field_id, ST_AsGeoJSON(polygon) as polygon, ST_AsGeoJSON(point) as point;`,
         );
       }
     } catch (e) {
@@ -445,15 +463,17 @@ export class FieldsService {
   }
 
   private extractGeometryFromField(
-    createFieldDto: CreateFieldDto | UpdateFieldDto,
+    createFieldDto: UpdateFieldDto,
   ): FieldAndGeometry {
     const fieldGeometry: FieldGeometry = {
       polygon: createFieldDto.polygon,
       point: createFieldDto.point,
+      removeGeo: createFieldDto.removeGeo ?? false,
     };
     const fieldWithoutGeometry: Field = _.omit(createFieldDto, [
       'polygon',
       'point',
+      'removeGeo',
     ]);
 
     return { fieldGeometry, fieldWithoutGeometry };

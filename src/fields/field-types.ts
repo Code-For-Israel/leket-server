@@ -23,6 +23,7 @@ export interface FilterDateRange {
 export interface FieldGeometry {
   point: Point;
   polygon: Polygon;
+  removeGeo: boolean;
 }
 
 export interface FieldAndGeometry {
